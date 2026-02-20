@@ -48,20 +48,102 @@ class OverworldScene: SKScene {
                 )
                 
                 // Add detail to some tiles
-                if tileType == .tree {
+                if tileType == .grass {
+                    // Random grass tufts for visual variety
+                    if (x + y * 3) % 5 == 0 {
+                        let tuft = SKSpriteNode(color: SKColor(red: 0.15, green: 0.5, blue: 0.15, alpha: 0.6), size: CGSize(width: 4, height: 6))
+                        tuft.position = CGPoint(x: CGFloat.random(in: -8...8), y: CGFloat.random(in: -8...8))
+                        tile.addChild(tuft)
+                    }
+                    // Occasional flowers
+                    if (x * 7 + y * 13) % 17 == 0 {
+                        let flower = SKShapeNode(circleOfRadius: 2)
+                        flower.fillColor = [SKColor.yellow, SKColor.red, SKColor.white, SKColor.purple][abs(x + y) % 4]
+                        flower.strokeColor = .clear
+                        flower.position = CGPoint(x: CGFloat.random(in: -6...6), y: CGFloat.random(in: -6...6))
+                        tile.addChild(flower)
+                    }
+                } else if tileType == .tree {
                     let trunk = SKSpriteNode(color: .brown, size: CGSize(width: 6, height: 10))
                     trunk.position = CGPoint(x: 0, y: -6)
                     tile.addChild(trunk)
                     let canopy = SKSpriteNode(color: SKColor(red: 0.15, green: 0.5, blue: 0.15, alpha: 1), size: CGSize(width: 20, height: 16))
                     canopy.position = CGPoint(x: 0, y: 4)
                     tile.addChild(canopy)
+                    // Tree shadow
+                    let shadow = SKSpriteNode(color: SKColor(white: 0, alpha: 0.15), size: CGSize(width: 18, height: 6))
+                    shadow.position = CGPoint(x: 4, y: -12)
+                    tile.addChild(shadow)
+                } else if tileType == .mountain {
+                    // Mountain peak triangle effect
+                    let peak = SKShapeNode()
+                    let path = CGMutablePath()
+                    path.move(to: CGPoint(x: 0, y: 12))
+                    path.addLine(to: CGPoint(x: -10, y: -6))
+                    path.addLine(to: CGPoint(x: 10, y: -6))
+                    path.closeSubpath()
+                    peak.path = path
+                    peak.fillColor = SKColor(red: 0.6, green: 0.6, blue: 0.65, alpha: 1)
+                    peak.strokeColor = SKColor(red: 0.4, green: 0.4, blue: 0.45, alpha: 1)
+                    peak.lineWidth = 1
+                    tile.addChild(peak)
+                    // Snow cap
+                    let snow = SKShapeNode()
+                    let snowPath = CGMutablePath()
+                    snowPath.move(to: CGPoint(x: 0, y: 12))
+                    snowPath.addLine(to: CGPoint(x: -4, y: 4))
+                    snowPath.addLine(to: CGPoint(x: 4, y: 4))
+                    snowPath.closeSubpath()
+                    snow.path = snowPath
+                    snow.fillColor = .white
+                    snow.strokeColor = .clear
+                    tile.addChild(snow)
+                } else if tileType == .sand {
+                    // Sand grain dots
+                    if (x + y * 2) % 3 == 0 {
+                        let dot = SKSpriteNode(color: SKColor(red: 0.75, green: 0.65, blue: 0.4, alpha: 0.5), size: CGSize(width: 2, height: 2))
+                        dot.position = CGPoint(x: CGFloat.random(in: -8...8), y: CGFloat.random(in: -8...8))
+                        tile.addChild(dot)
+                    }
+                } else if tileType == .path {
+                    // Path edge marks
+                    let border = SKSpriteNode(color: SKColor(red: 0.55, green: 0.45, blue: 0.25, alpha: 0.3), size: CGSize(width: tileSize, height: 2))
+                    border.position = CGPoint(x: 0, y: -tileSize/2 + 1)
+                    tile.addChild(border)
+                } else if tileType == .bridge {
+                    // Bridge planks
+                    for i in 0..<3 {
+                        let plank = SKSpriteNode(color: SKColor(red: 0.45, green: 0.3, blue: 0.1, alpha: 1), size: CGSize(width: 28, height: 2))
+                        plank.position = CGPoint(x: 0, y: CGFloat(i) * 10 - 10)
+                        tile.addChild(plank)
+                    }
+                    // Side rails
+                    let leftRail = SKSpriteNode(color: SKColor(red: 0.4, green: 0.25, blue: 0.1, alpha: 1), size: CGSize(width: 3, height: tileSize))
+                    leftRail.position = CGPoint(x: -13, y: 0)
+                    tile.addChild(leftRail)
+                    let rightRail = SKSpriteNode(color: SKColor(red: 0.4, green: 0.25, blue: 0.1, alpha: 1), size: CGSize(width: 3, height: tileSize))
+                    rightRail.position = CGPoint(x: 13, y: 0)
+                    tile.addChild(rightRail)
                 } else if tileType == .building {
                     let roof = SKSpriteNode(color: SKColor(red: 0.5, green: 0.2, blue: 0.1, alpha: 1), size: CGSize(width: 28, height: 8))
                     roof.position = CGPoint(x: 0, y: 8)
                     tile.addChild(roof)
+                    // Window
+                    let window = SKSpriteNode(color: SKColor(red: 0.9, green: 0.8, blue: 0.3, alpha: 0.6), size: CGSize(width: 6, height: 6))
+                    window.position = CGPoint(x: 0, y: -2)
+                    tile.addChild(window)
+                    // Warm glow animation
+                    window.run(.repeatForever(.sequence([
+                        .fadeAlpha(to: 0.3, duration: 2.0),
+                        .fadeAlpha(to: 0.6, duration: 2.0)
+                    ])))
                 } else if tileType == .door {
                     let doorFrame = SKSpriteNode(color: .brown, size: CGSize(width: 16, height: 24))
                     tile.addChild(doorFrame)
+                    // Door handle
+                    let handle = SKSpriteNode(color: .yellow, size: CGSize(width: 3, height: 3))
+                    handle.position = CGPoint(x: 5, y: 0)
+                    doorFrame.addChild(handle)
                 } else if tileType == .npc {
                     // NPC marker - glowing indicator
                     tile.color = MapTile.grass.color
