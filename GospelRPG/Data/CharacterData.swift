@@ -292,24 +292,24 @@ struct CharacterFactory {
         )
     }
 
-    // Chapter 5 enemies
-    static func spiritOfDeath() -> GameCharacter {
+    // Chapter 5 enemies — these are not demons but obstacles of grief and doubt
+    static func griefAndDespair() -> GameCharacter {
         GameCharacter(
-            id: "spirit_death", name: "Spirit of Death", characterClass: .demon,
-            title: "The Last Enemy",
+            id: "grief_despair", name: "Grief & Despair", characterClass: .obstacle,
+            title: "The Mourners' Wailing",
             level: 9, hp: 350, mp: 99, attack: 24, defense: 16, speed: 10, faith: 0,
-            abilities: [AbilityDB.graspOfDeath, AbilityDB.wailOfDespair, AbilityDB.torment],
+            abilities: [AbilityDB.graspOfDeath, AbilityDB.wailOfDespair],
             primaryColor: SKColor(red: 0.1, green: 0.1, blue: 0.1, alpha: 1),
-            secondaryColor: SKColor(red: 0.3, green: 0.0, blue: 0.0, alpha: 1)
+            secondaryColor: SKColor(red: 0.3, green: 0.3, blue: 0.4, alpha: 1)
         )
     }
 
-    static func spiritOfSickness() -> GameCharacter {
+    static func doubtAndFear() -> GameCharacter {
         GameCharacter(
-            id: "spirit_sickness", name: "Spirit of Sickness", characterClass: .demon,
-            title: "Twelve Years of Suffering",
+            id: "doubt_fear", name: "Doubt & Fear", characterClass: .obstacle,
+            title: "\"Why bother the teacher?\"",
             level: 7, hp: 200, mp: 99, attack: 18, defense: 10, speed: 8, faith: 0,
-            abilities: [AbilityDB.spiritOfInfirmity, AbilityDB.wailOfDespair, AbilityDB.darkCry],
+            abilities: [AbilityDB.wailOfDespair, AbilityDB.spiritOfInfirmity],
             primaryColor: SKColor(red: 0.4, green: 0.3, blue: 0.1, alpha: 1),
             secondaryColor: SKColor(red: 0.6, green: 0.4, blue: 0.2, alpha: 1)
         )

@@ -12,7 +12,7 @@ struct ChapterData {
                 DialogueLine(speaker: "Narrator", text: "Jesus and His disciples went to Capernaum, and when the Sabbath came, He entered the synagogue and began to teach.", scriptureRef: "Mark 1:21"),
                 DialogueLine(speaker: "Narrator", text: "The people were amazed at His teaching, because He taught them as one who had authority, not as the teachers of the law.", scriptureRef: "Mark 1:22"),
                 DialogueLine(speaker: "Simon Peter", text: "Master, the people are astonished by your words!", speakerColor: SKColor(red: 0.3, green: 0.3, blue: 0.8, alpha: 1)),
-                DialogueLine(speaker: "Jesus", text: "The Spirit of the Lord is upon me. Let us continue.", speakerColor: .white),
+                DialogueLine(speaker: "Jesus", text: "The time has come. The kingdom of God has come near. Repent and believe the good news!", scriptureRef: "Mark 1:15", speakerColor: .white),
                 DialogueLine(speaker: "Narrator", text: "Just then, a man in the synagogue who was possessed by an impure spirit cried out...", scriptureRef: "Mark 1:23"),
                 DialogueLine(speaker: "Unclean Spirit", text: "\"What do you want with us, Jesus of Nazareth? Have you come to destroy us? I know who you are—the Holy One of God!\"", scriptureRef: "Mark 1:24", speakerColor: .red),
                 DialogueLine(speaker: "Jesus", text: "We must free this man from the spirit's grip. Stand firm in faith!", speakerColor: .white),
@@ -24,11 +24,18 @@ struct ChapterData {
                 DialogueLine(speaker: "Crowd", text: "\"What is this? A new teaching—and with authority! He even gives orders to impure spirits and they obey him.\"", scriptureRef: "Mark 1:27"),
                 DialogueLine(speaker: "Narrator", text: "News about Jesus spread quickly over the whole region of Galilee.", scriptureRef: "Mark 1:28"),
                 DialogueLine(speaker: "Simon Peter", text: "That was incredible, Master! The spirit obeyed your command!"),
-                DialogueLine(speaker: "Andrew", text: "Brother! I wish to follow Jesus too. May I join you?", speakerColor: SKColor(red: 0.2, green: 0.6, blue: 0.5, alpha: 1)),
-                DialogueLine(speaker: "Jesus", text: "Come, Andrew. I will make you a fisher of men.", scriptureRef: "Mark 1:17", speakerColor: .white),
+                DialogueLine(speaker: "Narrator", text: "Earlier, as Jesus walked beside the Sea of Galilee, He saw Simon and his brother Andrew casting a net into the lake, for they were fishermen.", scriptureRef: "Mark 1:16"),
+                DialogueLine(speaker: "Andrew", text: "Brother! Jesus called us to follow Him. I am here!", speakerColor: SKColor(red: 0.2, green: 0.6, blue: 0.5, alpha: 1)),
+                DialogueLine(speaker: "Jesus", text: "\"Come, follow me, and I will send you out to fish for people.\"", scriptureRef: "Mark 1:17", speakerColor: .white),
                 DialogueLine(speaker: "Narrator", text: "Andrew has joined the party! ⭐"),
+                DialogueLine(speaker: "Narrator", text: "When He had gone a little farther, He saw James son of Zebedee and his brother John in a boat, preparing their nets.", scriptureRef: "Mark 1:19"),
+                DialogueLine(speaker: "James", text: "We saw what you did in the synagogue, Teacher. We will follow you!", speakerColor: SKColor(red: 0.7, green: 0.2, blue: 0.2, alpha: 1)),
+                DialogueLine(speaker: "John", text: "My brother speaks for us both. Where you go, we will go.", speakerColor: SKColor(red: 0.2, green: 0.4, blue: 0.7, alpha: 1)),
+                DialogueLine(speaker: "Narrator", text: "Without delay, He called them, and they left their father Zebedee in the boat with the hired men and followed Him.", scriptureRef: "Mark 1:20"),
+                DialogueLine(speaker: "Narrator", text: "James has joined the party! ⭐"),
+                DialogueLine(speaker: "Narrator", text: "John has joined the party! ⭐"),
             ],
-            recruitableApostle: CharacterFactory.andrew(),
+            recruitableApostles: [CharacterFactory.andrew(), CharacterFactory.james(), CharacterFactory.john()],
             bossName: "Unclean Spirit"
         )
     }
@@ -61,11 +68,12 @@ struct ChapterData {
                 DialogueLine(speaker: "Healed Man", text: "Thank you, Lord! Please, let me go with you!"),
                 DialogueLine(speaker: "Jesus", text: "\"Go home to your own people and tell them how much the Lord has done for you, and how He has had mercy on you.\"", scriptureRef: "Mark 5:19", speakerColor: .white),
                 DialogueLine(speaker: "Narrator", text: "So the man went away and told everyone in the Decapolis how much Jesus had done for him. And all the people were amazed.", scriptureRef: "Mark 5:20"),
-                DialogueLine(speaker: "James", text: "That was the mightiest work I have ever witnessed! I am James, son of Zebedee. I would follow you, Teacher.", speakerColor: SKColor(red: 0.7, green: 0.2, blue: 0.2, alpha: 1)),
-                DialogueLine(speaker: "Jesus", text: "Welcome, James. You shall be called a Son of Thunder.", scriptureRef: "Mark 3:17", speakerColor: .white),
-                DialogueLine(speaker: "Narrator", text: "James has joined the party! ⭐"),
+                DialogueLine(speaker: "Narrator", text: "As Jesus walked along, He saw Levi son of Alphaeus sitting at the tax collector's booth.", scriptureRef: "Mark 2:14"),
+                DialogueLine(speaker: "Levi", text: "Teacher, I have heard of your deeds. Even a tax collector may follow?", speakerColor: SKColor(red: 0.6, green: 0.5, blue: 0.2, alpha: 1)),
+                DialogueLine(speaker: "Jesus", text: "\"Follow me.\" And Levi got up and followed Him.", scriptureRef: "Mark 2:14", speakerColor: .white),
+                DialogueLine(speaker: "Narrator", text: "Levi has joined the party! ⭐"),
             ],
-            recruitableApostle: CharacterFactory.james(),
+            recruitableApostles: [CharacterFactory.levi()],
             bossName: "Legion"
         )
     }
@@ -97,14 +105,11 @@ struct ChapterData {
                 DialogueLine(speaker: "Simon Peter", text: "Master, why couldn't we drive it out?"),
                 DialogueLine(speaker: "Jesus", text: "\"This kind can come out only by prayer.\"", scriptureRef: "Mark 9:29", speakerColor: .white),
                 DialogueLine(speaker: "Narrator", text: "The disciples learned an important lesson: faith and prayer are the keys to overcoming even the most powerful evil."),
-                DialogueLine(speaker: "John", text: "I am John, brother of James. I have witnessed your power and love, Master. I wish to follow you always.", speakerColor: SKColor(red: 0.2, green: 0.4, blue: 0.7, alpha: 1)),
-                DialogueLine(speaker: "Jesus", text: "Come, John. You are beloved.", speakerColor: .white),
-                DialogueLine(speaker: "Narrator", text: "John has joined the party! ⭐"),
                 DialogueLine(speaker: "Narrator", text: "🎉 Congratulations! You have completed the Gospel of Mark: Exorcism chapters!"),
                 DialogueLine(speaker: "Narrator", text: "Remember: Jesus has authority over all evil. Through faith and prayer, nothing is impossible!"),
                 DialogueLine(speaker: "Narrator", text: "\"For God has not given us a spirit of fear, but of power and of love and of a sound mind.\" — 2 Timothy 1:7"),
             ],
-            recruitableApostle: CharacterFactory.john(),
+            recruitableApostles: [],
             bossName: "Deaf & Mute Spirit"
         )
     }
@@ -135,11 +140,8 @@ struct ChapterData {
                 DialogueLine(speaker: "Jesus", text: "\"Why are you so afraid? Do you still have no faith?\"", scriptureRef: "Mark 4:40", speakerColor: .white),
                 DialogueLine(speaker: "Simon Peter", text: "...Who is this? Even the wind and the waves obey Him!", scriptureRef: "Mark 4:41"),
                 DialogueLine(speaker: "Narrator", text: "They were terrified and asked each other, \"Who is this? Even the wind and the waves obey Him!\"", scriptureRef: "Mark 4:41"),
-                DialogueLine(speaker: "Levi", text: "I am Levi, a tax collector. I saw what you did from the shore. No man commands the sea... unless God is with Him.", speakerColor: SKColor(red: 0.6, green: 0.5, blue: 0.2, alpha: 1)),
-                DialogueLine(speaker: "Jesus", text: "\"Follow me.\" And Levi got up and followed Him.", scriptureRef: "Mark 2:14", speakerColor: .white),
-                DialogueLine(speaker: "Narrator", text: "Levi has joined the party! ⭐"),
             ],
-            recruitableApostle: CharacterFactory.levi(),
+            recruitableApostles: [],
             bossName: "The Great Storm"
         )
     }
@@ -162,9 +164,9 @@ struct ChapterData {
                 DialogueLine(speaker: "Jesus", text: "\"Daughter, your faith has healed you. Go in peace and be freed from your suffering.\"", scriptureRef: "Mark 5:34", speakerColor: .white),
                 DialogueLine(speaker: "Messenger", text: "\"Your daughter is dead. Why bother the teacher anymore?\"", scriptureRef: "Mark 5:35"),
                 DialogueLine(speaker: "Jesus", text: "\"Don't be afraid; just believe.\"", scriptureRef: "Mark 5:36", speakerColor: .white),
-                DialogueLine(speaker: "Narrator", text: "At the house, people were crying and wailing loudly. A dark presence hovers over the child..."),
+                DialogueLine(speaker: "Narrator", text: "At the house, people were crying and wailing loudly. Grief and despair fill the air..."),
             ],
-            battleEnemies: [CharacterFactory.spiritOfDeath(), CharacterFactory.spiritOfSickness()],
+            battleEnemies: [CharacterFactory.griefAndDespair(), CharacterFactory.doubtAndFear()],
             postBattleDialogue: [
                 DialogueLine(speaker: "Jesus", text: "\"Why all this commotion and wailing? The child is not dead but asleep.\"", scriptureRef: "Mark 5:39", speakerColor: .white),
                 DialogueLine(speaker: "Narrator", text: "They laughed at Him. But He put them all out, took the child's father and mother and went in where the child was.", scriptureRef: "Mark 5:40"),
@@ -179,7 +181,7 @@ struct ChapterData {
                 DialogueLine(speaker: "Narrator", text: "You've witnessed Jesus' authority over demons, nature, sickness, and even death itself."),
                 DialogueLine(speaker: "Narrator", text: "\"For God so loved the world that He gave His one and only Son, that whoever believes in Him shall not perish but have eternal life.\" — John 3:16"),
             ],
-            recruitableApostle: CharacterFactory.bartholomew(),
+            recruitableApostles: [CharacterFactory.bartholomew()],
             bossName: "Spirit of Death"
         )
     }

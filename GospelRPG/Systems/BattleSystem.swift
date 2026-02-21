@@ -37,7 +37,7 @@ class BattleSystem: ObservableObject {
         while attempts < turnOrder.count {
             let current = turnOrder[currentTurnIndex % turnOrder.count]
             if current.isAlive {
-                isPlayerTurn = current.characterClass != .demon
+                isPlayerTurn = current.characterClass != .demon && current.characterClass != .obstacle
                 if !isPlayerTurn {
                     // Auto-execute enemy turn after a small delay
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {

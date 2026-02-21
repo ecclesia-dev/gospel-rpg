@@ -137,8 +137,8 @@ struct GameView: View {
         dialogueCompletion = {
             currentDialogue = nil
             
-            // Recruit apostle if available
-            if let apostle = currentChapter.recruitableApostle {
+            // Recruit apostles if available
+            for apostle in currentChapter.recruitableApostles {
                 gameState.party.append(apostle)
             }
             

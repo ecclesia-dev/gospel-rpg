@@ -7,6 +7,7 @@ enum CharacterClass: String, Codable {
     case messiah = "Messiah"
     case apostle = "Apostle"
     case demon = "Unclean Spirit"
+    case obstacle = "Obstacle"
 }
 
 enum Element: String, Codable {
@@ -142,7 +143,7 @@ struct Chapter {
     let introDialogue: [DialogueLine]
     let battleEnemies: [GameCharacter]
     let postBattleDialogue: [DialogueLine]
-    let recruitableApostle: GameCharacter?
+    let recruitableApostles: [GameCharacter]
     let bossName: String
 }
 
