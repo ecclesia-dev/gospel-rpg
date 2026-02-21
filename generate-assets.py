@@ -5,7 +5,7 @@ import json
 import os
 from PIL import Image, ImageDraw
 
-BASE = "/Users/master/.openclaw/workspace/projects/gospel-rpg/GospelRPG/Assets.xcassets"
+BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "GospelRPG", "Assets.xcassets")
 
 def save_asset(name, img):
     """Save image as Xcode asset catalog entry."""
