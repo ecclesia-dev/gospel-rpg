@@ -24,12 +24,15 @@ class OverworldScene: SKScene {
     var partyColor: SKColor = .white
     var partySecondary: SKColor = .yellow
     
+    var chapterNumber: Int = 1
+    
     override func didMove(to view: SKView) {
-        backgroundColor = .black
+        backgroundColor = SKColor(red: 0.08, green: 0.12, blue: 0.06, alpha: 1)
         setupMap()
         setupPlayer()
         setupCamera()
         setupControls()
+        setupAmbience()
     }
     
     func setupMap() {
@@ -184,6 +187,8 @@ class OverworldScene: SKScene {
         playerNode.zPosition = 10
         updatePlayerPosition(animated: false)
         addChild(playerNode)
+        PixelArtRenderer.addHaloGlow(to: playerNode)
+        PixelArtRenderer.addShadow(to: playerNode)
         PixelArtRenderer.addIdleAnimation(to: playerNode)
     }
     
@@ -353,5 +358,88 @@ class OverworldScene: SKScene {
                 }
             }
         }
+    }
+    
+    // MARK: - Ambient Effects
+    
+    func setupAmbience() {
+        let mapWidth = CGFloat(mapData[0].count) * tileSize
+        let mapHeight = CGFloat(mapData.count) * tileSize
+        
+        // Floating dust motes / pollen particles
+        let dustEmitter = SKEmitterNode()
+        dustEmitter.particleBirthRate = 3
+        dustEmitter.particleLifetime = 8
+        dustEmitter.particleLifetimeRange = 4
+        dustEmitter.particleSpeed = 8
+        dustEmitter.particleSpeedRange = 5
+        dustEmitter.emissionAngle = .pi / 2
+        dustEmitter.emissionAngleRange = .pi
+        dustEmitter.particleScale = 0.15
+        dustEmitter.particleScaleRange = 0.1
+        dustEmitter.particleAlpha = 0.4
+        dustEmitter.particleAlphaRange = 0.2
+        dustEmitter.particleAlphaSpeed = -0.05
+        dustEmitter.particleSize = CGSize(width: 4, height: 4)
+        dustEmitter.particleColor = SKColor(white: 1.0, alpha: 1)
+        dustEmitter.particleColorBlendFactor = 1.0
+        dustEmitter.position = CGPoint(x: mapWidth / 2, y: mapHeight / 2)
+        dustEmitter.particlePositionRange = CGVector(dx: mapWidth, dy: mapHeight)
+        dustEmitter.zPosition = 5
+        addChild(dustEmitter)
+        
+        // Chapter-specific atmosphere
+        switch chapterNumber {
+        case 2:
+            // Gerasene tombs — eerie fog
+            let fog = SKEmitterNode()
+            fog.particleBirthRate = 2
+            fog.particleLifetime = 6
+            fog.particleSpeed = 4
+            fog.emissionAngle = 0
+            fog.emissionAngleRange = .pi * 2
+            fog.particleScale = 1.5
+            fog.particleScaleRange = 0.5
+            fog.particleAlpha = 0.15
+            fog.particleAlphaSpeed = -0.02
+            fog.particleSize = CGSize(width: 40, height: 20)
+            fog.particleColor = SKColor(red: 0.5, green: 0.4, blue: 0.6, alpha: 1)
+            fog.particleColorBlendFactor = 1.0
+            fog.position = CGPoint(x: mapWidth / 2, y: mapHeight / 2)
+            fog.particlePositionRange = CGVector(dx: mapWidth, dy: mapHeight)
+            fog.zPosition = 4
+            addChild(fog)
+        case 4:
+            // Sea — rain effect
+            let rain = SKEmitterNode()
+            rain.particleBirthRate = 30
+            rain.particleLifetime = 1.5
+            rain.particleSpeed = 200
+            rain.particleSpeedRange = 50
+            rain.emissionAngle = -.pi / 2 - 0.2
+            rain.particleScale = 0.1
+            rain.particleScaleRange = 0.05
+            rain.particleAlpha = 0.3
+            rain.particleAlphaRange = 0.1
+            rain.particleSize = CGSize(width: 2, height: 12)
+            rain.particleColor = SKColor(red: 0.6, green: 0.7, blue: 0.9, alpha: 1)
+            rain.particleColorBlendFactor = 1.0
+            rain.position = CGPoint(x: mapWidth / 2, y: mapHeight + 20)
+            rain.particlePositionRange = CGVector(dx: mapWidth * 1.5, dy: 0)
+            rain.zPosition = 15
+            addChild(rain)
+        default:
+            break
+        }
+        
+        // Subtle vignette overlay on camera
+        let vignetteSize = size
+        let vignette = SKShapeNode(rectOf: CGSize(width: vignetteSize.width + 100, height: vignetteSize.height + 100))
+        vignette.fillColor = .clear
+        vignette.strokeColor = SKColor(white: 0, alpha: 0.4)
+        vignette.lineWidth = 80
+        vignette.zPosition = 50
+        vignette.name = "vignette"
+        cameraNode2.addChild(vignette)
     }
 }

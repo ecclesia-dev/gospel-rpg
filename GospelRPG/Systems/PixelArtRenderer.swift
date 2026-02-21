@@ -124,6 +124,31 @@ class PixelArtRenderer {
         emitter.run(.sequence([.wait(forDuration: 0.8), .removeFromParent()]))
     }
     
+    // Add a halo glow behind holy characters
+    static func addHaloGlow(to node: SKNode, color: SKColor = .yellow) {
+        let halo = SKShapeNode(circleOfRadius: 12)
+        halo.fillColor = color.withAlphaComponent(0.15)
+        halo.strokeColor = color.withAlphaComponent(0.3)
+        halo.lineWidth = 1
+        halo.position = CGPoint(x: 16, y: 40)
+        halo.zPosition = -1
+        node.addChild(halo)
+        halo.run(.repeatForever(.sequence([
+            .fadeAlpha(to: 0.4, duration: 1.5),
+            .fadeAlpha(to: 1.0, duration: 1.5)
+        ])))
+    }
+    
+    // Shadow under characters
+    static func addShadow(to node: SKNode) {
+        let shadow = SKShapeNode(ellipseOf: CGSize(width: 24, height: 8))
+        shadow.fillColor = SKColor(white: 0, alpha: 0.25)
+        shadow.strokeColor = .clear
+        shadow.position = CGPoint(x: 16, y: -4)
+        shadow.zPosition = -2
+        node.addChild(shadow)
+    }
+    
     // Animate idle bob
     static func addIdleAnimation(to node: SKNode) {
         let bob = SKAction.sequence([

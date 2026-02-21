@@ -59,6 +59,8 @@ struct OverworldView: View {
         s.triggerX = trigger.x
         s.triggerY = trigger.y
         
+        s.chapterNumber = chapter.number
+        
         if let jesus = gameState.party.first {
             s.partyColor = jesus.primaryColor
             s.partySecondary = jesus.secondaryColor

@@ -282,6 +282,7 @@ struct BattleView: View {
         let scene = BattleScene(size: CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height * 0.45))
         scene.scaleMode = .aspectFill
         scene.battleSystem = battleSystem
+        scene.chapterNumber = chapter.number
         battleScene = scene
         
         battleSystem.inventory = gameState.inventory

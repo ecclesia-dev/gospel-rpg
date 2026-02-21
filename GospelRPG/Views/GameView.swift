@@ -68,8 +68,38 @@ struct GameView: View {
                 }
                 
             case .victory:
-                // Handled through dialogue -> next chapter
-                Color.black.ignoresSafeArea()
+                // Victory celebration screen
+                ZStack {
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 0.05, green: 0.02, blue: 0.15),
+                            Color(red: 0.15, green: 0.1, blue: 0.3),
+                            Color(red: 0.05, green: 0.02, blue: 0.15)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .ignoresSafeArea()
+
+                    VStack(spacing: 20) {
+                        Spacer()
+                        Text("✝")
+                            .font(.system(size: 60))
+                            .foregroundColor(.yellow)
+                            .shadow(color: .yellow.opacity(0.6), radius: 20)
+                        Text("GLORY TO GOD!")
+                            .font(.custom("Courier-Bold", size: 28))
+                            .foregroundColor(.yellow)
+                        Text("Chapter \(gameState.currentChapter) Complete")
+                            .font(.custom("Courier", size: 16))
+                            .foregroundColor(.white.opacity(0.7))
+                        Spacer()
+                        RPGButton(title: "CONTINUE") {
+                            handleVictory()
+                        }
+                        Spacer().frame(height: 60)
+                    }
+                }
                 
             case .gameOver:
                 GameOverView(gameState: gameState)
