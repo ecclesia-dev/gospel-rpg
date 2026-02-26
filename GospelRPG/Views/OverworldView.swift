@@ -61,9 +61,11 @@ struct OverworldView: View {
         
         s.chapterNumber = chapter.number
         
-        if let jesus = gameState.party.first {
-            s.partyColor = jesus.primaryColor
-            s.partySecondary = jesus.secondaryColor
+        if let leader = gameState.party.first {
+            s.partyColor = leader.primaryColor
+            s.partySecondary = leader.secondaryColor
+            // Fix 1: Tell the scene which PNG to load for the player character
+            s.playerCharacterID = leader.id
         }
         
         let b = OverworldBridge(onTrigger: onTrigger, onMenu: onMenu)

@@ -30,7 +30,7 @@ struct Item: Identifiable, Codable, Equatable {
 
 // MARK: - Equipment Loadout
 
-struct EquipmentLoadout {
+struct EquipmentLoadout: Codable {
     var weapon: Item?
     var body: Item?
     var feet: Item?

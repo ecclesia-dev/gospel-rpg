@@ -1,7 +1,9 @@
 import SwiftUI
 
 struct GameView: View {
-    @StateObject private var gameState = GameState()
+    // Fix 4: Single GameState instance — no static .shared.
+    // Fix 5: Load persisted state at startup via GameState.load().
+    @StateObject private var gameState = GameState.load()
     @StateObject private var battleSystem = BattleSystem()
     
     @State private var currentDialogue: [DialogueLine]?
@@ -126,6 +128,27 @@ struct GameView: View {
         .animation(.easeInOut(duration: 0.3), value: gameState.currentScreen)
         .preferredColorScheme(.dark)
         .statusBarHidden(true)
+        // Fix 6: Play correct SNES-style theme on screen transitions
+        .onChange(of: gameState.currentScreen) { screen in
+            switch screen {
+            case .title:       MusicEngine.shared.play(theme: .title)
+            case .overworld:   MusicEngine.shared.play(theme: .overworld)
+            case .battle:      MusicEngine.shared.play(theme: .battle)
+            case .victory:     MusicEngine.shared.play(theme: .victory)
+            case .chapterIntro: MusicEngine.shared.play(theme: .title)
+            case .gameOver:    MusicEngine.shared.stop()
+            default:           break
+            }
+        }
+        .onAppear {
+            // Fix 6: Start title music on first appear
+            MusicEngine.shared.play(theme: .title)
+        }
+        // Fix 5: Save when app backgrounds
+        .onReceive(NotificationCenter.default.publisher(
+            for: UIApplication.didEnterBackgroundNotification)) { _ in
+            gameState.save()
+        }
     }
     
     func handleVictory() {
@@ -153,6 +176,9 @@ struct GameView: View {
             if !gameState.chaptersCompleted.contains(gameState.currentChapter) {
                 gameState.chaptersCompleted.append(gameState.currentChapter)
             }
+            
+            // Fix 5: Persist progress on chapter complete
+            gameState.save()
             
             // Advance to next chapter or end
             let chapters = ChapterData.allChapters()

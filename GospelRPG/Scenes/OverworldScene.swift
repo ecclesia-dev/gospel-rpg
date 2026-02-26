@@ -24,10 +24,15 @@ class OverworldScene: SKScene {
     var partyColor: SKColor = .white
     var partySecondary: SKColor = .yellow
     
+    /// Asset name for the player character sprite (e.g. "jesus", "peter")
+    var playerCharacterID: String = "jesus"
+    
     var chapterNumber: Int = 1
     
     // Hold-to-move support
     var moveTimer: Timer?
+    /// Initial delay timer before the repeating hold-move fires
+    var moveTimerInitial: Timer?
     var activeMoveDir: (Int, Int) = (0, 0)
     
     override func didMove(to view: SKView) {
@@ -39,121 +44,148 @@ class OverworldScene: SKScene {
         setupAmbience()
     }
     
+    // MARK: - Asset helpers
+    
+    /// Returns an SKTexture if the named xcassets image exists; otherwise nil (use procedural fallback).
+    private func tryTexture(named name: String) -> SKTexture? {
+        #if canImport(UIKit)
+        guard UIImage(named: name) != nil else { return nil }
+        #endif
+        return SKTexture(imageNamed: name)
+    }
+    
+    /// Maps a MapTile type to its xcassets image name.
+    private func tileImageName(for tile: MapTile) -> String? {
+        switch tile {
+        case .grass:    return "tile_grass"
+        case .water:    return "tile_water"
+        case .sand:     return "tile_sand"
+        case .path:     return "tile_dirt_path"
+        case .building: return "tile_wall_mud"
+        case .tree:     return "tile_tree"
+        case .mountain: return "tile_rock"
+        case .bridge:   return "tile_stone_floor"
+        case .door:     return "tile_door"
+        case .npc:      return "tile_grass"  // NPC tile uses grass base + marker overlay
+        }
+    }
+    
     func setupMap() {
         tileNodes = []
         for y in 0..<mapData.count {
             var row: [SKSpriteNode] = []
             for x in 0..<mapData[y].count {
                 let tileType = MapTile(rawValue: mapData[y][x]) ?? .grass
-                let tile = SKSpriteNode(
-                    color: tileType.color,
-                    size: CGSize(width: tileSize, height: tileSize)
-                )
+                
+                // Fix 1: Load PNG asset if available; fall back to procedural colour
+                let tile: SKSpriteNode
+                if let imageName = tileImageName(for: tileType),
+                   let texture = tryTexture(named: imageName) {
+                    tile = SKSpriteNode(texture: texture, size: CGSize(width: tileSize, height: tileSize))
+                } else {
+                    tile = SKSpriteNode(color: tileType.color, size: CGSize(width: tileSize, height: tileSize))
+                }
+                
                 tile.position = CGPoint(
                     x: CGFloat(x) * tileSize + tileSize / 2,
                     y: CGFloat(mapData.count - 1 - y) * tileSize + tileSize / 2
                 )
                 
-                // Add detail to some tiles
-                if tileType == .grass {
-                    // Random grass tufts for visual variety
-                    if (x + y * 3) % 5 == 0 {
-                        let tuft = SKSpriteNode(color: SKColor(red: 0.15, green: 0.5, blue: 0.15, alpha: 0.6), size: CGSize(width: 4, height: 6))
-                        tuft.position = CGPoint(x: CGFloat.random(in: -8...8), y: CGFloat.random(in: -8...8))
-                        tile.addChild(tuft)
+                // Overlay decorations only when NOT using a real texture (or always for dynamic elements)
+                let usingProcedural = tileImageName(for: tileType).flatMap { tryTexture(named: $0) } == nil
+                
+                if usingProcedural {
+                    // Add detail to some tiles
+                    if tileType == .grass {
+                        if (x + y * 3) % 5 == 0 {
+                            let tuft = SKSpriteNode(color: SKColor(red: 0.15, green: 0.5, blue: 0.15, alpha: 0.6), size: CGSize(width: 4, height: 6))
+                            tuft.position = CGPoint(x: CGFloat.random(in: -8...8), y: CGFloat.random(in: -8...8))
+                            tile.addChild(tuft)
+                        }
+                        if (x * 7 + y * 13) % 17 == 0 {
+                            let flower = SKShapeNode(circleOfRadius: 2)
+                            flower.fillColor = [SKColor.yellow, SKColor.red, SKColor.white, SKColor.purple][abs(x + y) % 4]
+                            flower.strokeColor = .clear
+                            flower.position = CGPoint(x: CGFloat.random(in: -6...6), y: CGFloat.random(in: -6...6))
+                            tile.addChild(flower)
+                        }
+                    } else if tileType == .tree {
+                        let trunk = SKSpriteNode(color: .brown, size: CGSize(width: 6, height: 10))
+                        trunk.position = CGPoint(x: 0, y: -6)
+                        tile.addChild(trunk)
+                        let canopy = SKSpriteNode(color: SKColor(red: 0.15, green: 0.5, blue: 0.15, alpha: 1), size: CGSize(width: 20, height: 16))
+                        canopy.position = CGPoint(x: 0, y: 4)
+                        tile.addChild(canopy)
+                        let shadow = SKSpriteNode(color: SKColor(white: 0, alpha: 0.15), size: CGSize(width: 18, height: 6))
+                        shadow.position = CGPoint(x: 4, y: -12)
+                        tile.addChild(shadow)
+                    } else if tileType == .mountain {
+                        let peak = SKShapeNode()
+                        let path = CGMutablePath()
+                        path.move(to: CGPoint(x: 0, y: 12))
+                        path.addLine(to: CGPoint(x: -10, y: -6))
+                        path.addLine(to: CGPoint(x: 10, y: -6))
+                        path.closeSubpath()
+                        peak.path = path
+                        peak.fillColor = SKColor(red: 0.6, green: 0.6, blue: 0.65, alpha: 1)
+                        peak.strokeColor = SKColor(red: 0.4, green: 0.4, blue: 0.45, alpha: 1)
+                        peak.lineWidth = 1
+                        tile.addChild(peak)
+                        let snow = SKShapeNode()
+                        let snowPath = CGMutablePath()
+                        snowPath.move(to: CGPoint(x: 0, y: 12))
+                        snowPath.addLine(to: CGPoint(x: -4, y: 4))
+                        snowPath.addLine(to: CGPoint(x: 4, y: 4))
+                        snowPath.closeSubpath()
+                        snow.path = snowPath
+                        snow.fillColor = .white
+                        snow.strokeColor = .clear
+                        tile.addChild(snow)
+                    } else if tileType == .sand {
+                        if (x + y * 2) % 3 == 0 {
+                            let dot = SKSpriteNode(color: SKColor(red: 0.75, green: 0.65, blue: 0.4, alpha: 0.5), size: CGSize(width: 2, height: 2))
+                            dot.position = CGPoint(x: CGFloat.random(in: -8...8), y: CGFloat.random(in: -8...8))
+                            tile.addChild(dot)
+                        }
+                    } else if tileType == .path {
+                        let border = SKSpriteNode(color: SKColor(red: 0.55, green: 0.45, blue: 0.25, alpha: 0.3), size: CGSize(width: tileSize, height: 2))
+                        border.position = CGPoint(x: 0, y: -tileSize/2 + 1)
+                        tile.addChild(border)
+                    } else if tileType == .bridge {
+                        for i in 0..<3 {
+                            let plank = SKSpriteNode(color: SKColor(red: 0.45, green: 0.3, blue: 0.1, alpha: 1), size: CGSize(width: 28, height: 2))
+                            plank.position = CGPoint(x: 0, y: CGFloat(i) * 10 - 10)
+                            tile.addChild(plank)
+                        }
+                        let leftRail = SKSpriteNode(color: SKColor(red: 0.4, green: 0.25, blue: 0.1, alpha: 1), size: CGSize(width: 3, height: tileSize))
+                        leftRail.position = CGPoint(x: -13, y: 0)
+                        tile.addChild(leftRail)
+                        let rightRail = SKSpriteNode(color: SKColor(red: 0.4, green: 0.25, blue: 0.1, alpha: 1), size: CGSize(width: 3, height: tileSize))
+                        rightRail.position = CGPoint(x: 13, y: 0)
+                        tile.addChild(rightRail)
+                    } else if tileType == .building {
+                        let roof = SKSpriteNode(color: SKColor(red: 0.5, green: 0.2, blue: 0.1, alpha: 1), size: CGSize(width: 28, height: 8))
+                        roof.position = CGPoint(x: 0, y: 8)
+                        tile.addChild(roof)
+                        let window = SKSpriteNode(color: SKColor(red: 0.9, green: 0.8, blue: 0.3, alpha: 0.6), size: CGSize(width: 6, height: 6))
+                        window.position = CGPoint(x: 0, y: -2)
+                        tile.addChild(window)
+                        window.run(.repeatForever(.sequence([
+                            .fadeAlpha(to: 0.3, duration: 2.0),
+                            .fadeAlpha(to: 0.6, duration: 2.0)
+                        ])))
+                    } else if tileType == .door {
+                        let doorFrame = SKSpriteNode(color: .brown, size: CGSize(width: 16, height: 24))
+                        tile.addChild(doorFrame)
+                        let handle = SKSpriteNode(color: .yellow, size: CGSize(width: 3, height: 3))
+                        handle.position = CGPoint(x: 5, y: 0)
+                        doorFrame.addChild(handle)
                     }
-                    // Occasional flowers
-                    if (x * 7 + y * 13) % 17 == 0 {
-                        let flower = SKShapeNode(circleOfRadius: 2)
-                        flower.fillColor = [SKColor.yellow, SKColor.red, SKColor.white, SKColor.purple][abs(x + y) % 4]
-                        flower.strokeColor = .clear
-                        flower.position = CGPoint(x: CGFloat.random(in: -6...6), y: CGFloat.random(in: -6...6))
-                        tile.addChild(flower)
-                    }
-                } else if tileType == .tree {
-                    let trunk = SKSpriteNode(color: .brown, size: CGSize(width: 6, height: 10))
-                    trunk.position = CGPoint(x: 0, y: -6)
-                    tile.addChild(trunk)
-                    let canopy = SKSpriteNode(color: SKColor(red: 0.15, green: 0.5, blue: 0.15, alpha: 1), size: CGSize(width: 20, height: 16))
-                    canopy.position = CGPoint(x: 0, y: 4)
-                    tile.addChild(canopy)
-                    // Tree shadow
-                    let shadow = SKSpriteNode(color: SKColor(white: 0, alpha: 0.15), size: CGSize(width: 18, height: 6))
-                    shadow.position = CGPoint(x: 4, y: -12)
-                    tile.addChild(shadow)
-                } else if tileType == .mountain {
-                    // Mountain peak triangle effect
-                    let peak = SKShapeNode()
-                    let path = CGMutablePath()
-                    path.move(to: CGPoint(x: 0, y: 12))
-                    path.addLine(to: CGPoint(x: -10, y: -6))
-                    path.addLine(to: CGPoint(x: 10, y: -6))
-                    path.closeSubpath()
-                    peak.path = path
-                    peak.fillColor = SKColor(red: 0.6, green: 0.6, blue: 0.65, alpha: 1)
-                    peak.strokeColor = SKColor(red: 0.4, green: 0.4, blue: 0.45, alpha: 1)
-                    peak.lineWidth = 1
-                    tile.addChild(peak)
-                    // Snow cap
-                    let snow = SKShapeNode()
-                    let snowPath = CGMutablePath()
-                    snowPath.move(to: CGPoint(x: 0, y: 12))
-                    snowPath.addLine(to: CGPoint(x: -4, y: 4))
-                    snowPath.addLine(to: CGPoint(x: 4, y: 4))
-                    snowPath.closeSubpath()
-                    snow.path = snowPath
-                    snow.fillColor = .white
-                    snow.strokeColor = .clear
-                    tile.addChild(snow)
-                } else if tileType == .sand {
-                    // Sand grain dots
-                    if (x + y * 2) % 3 == 0 {
-                        let dot = SKSpriteNode(color: SKColor(red: 0.75, green: 0.65, blue: 0.4, alpha: 0.5), size: CGSize(width: 2, height: 2))
-                        dot.position = CGPoint(x: CGFloat.random(in: -8...8), y: CGFloat.random(in: -8...8))
-                        tile.addChild(dot)
-                    }
-                } else if tileType == .path {
-                    // Path edge marks
-                    let border = SKSpriteNode(color: SKColor(red: 0.55, green: 0.45, blue: 0.25, alpha: 0.3), size: CGSize(width: tileSize, height: 2))
-                    border.position = CGPoint(x: 0, y: -tileSize/2 + 1)
-                    tile.addChild(border)
-                } else if tileType == .bridge {
-                    // Bridge planks
-                    for i in 0..<3 {
-                        let plank = SKSpriteNode(color: SKColor(red: 0.45, green: 0.3, blue: 0.1, alpha: 1), size: CGSize(width: 28, height: 2))
-                        plank.position = CGPoint(x: 0, y: CGFloat(i) * 10 - 10)
-                        tile.addChild(plank)
-                    }
-                    // Side rails
-                    let leftRail = SKSpriteNode(color: SKColor(red: 0.4, green: 0.25, blue: 0.1, alpha: 1), size: CGSize(width: 3, height: tileSize))
-                    leftRail.position = CGPoint(x: -13, y: 0)
-                    tile.addChild(leftRail)
-                    let rightRail = SKSpriteNode(color: SKColor(red: 0.4, green: 0.25, blue: 0.1, alpha: 1), size: CGSize(width: 3, height: tileSize))
-                    rightRail.position = CGPoint(x: 13, y: 0)
-                    tile.addChild(rightRail)
-                } else if tileType == .building {
-                    let roof = SKSpriteNode(color: SKColor(red: 0.5, green: 0.2, blue: 0.1, alpha: 1), size: CGSize(width: 28, height: 8))
-                    roof.position = CGPoint(x: 0, y: 8)
-                    tile.addChild(roof)
-                    // Window
-                    let window = SKSpriteNode(color: SKColor(red: 0.9, green: 0.8, blue: 0.3, alpha: 0.6), size: CGSize(width: 6, height: 6))
-                    window.position = CGPoint(x: 0, y: -2)
-                    tile.addChild(window)
-                    // Warm glow animation
-                    window.run(.repeatForever(.sequence([
-                        .fadeAlpha(to: 0.3, duration: 2.0),
-                        .fadeAlpha(to: 0.6, duration: 2.0)
-                    ])))
-                } else if tileType == .door {
-                    let doorFrame = SKSpriteNode(color: .brown, size: CGSize(width: 16, height: 24))
-                    tile.addChild(doorFrame)
-                    // Door handle
-                    let handle = SKSpriteNode(color: .yellow, size: CGSize(width: 3, height: 3))
-                    handle.position = CGPoint(x: 5, y: 0)
-                    doorFrame.addChild(handle)
-                } else if tileType == .npc {
-                    // NPC marker - glowing indicator
-                    tile.color = MapTile.grass.color
+                }
+                
+                // NPC markers are always drawn (dynamic element regardless of texture)
+                if tileType == .npc {
+                    if usingProcedural { tile.color = MapTile.grass.color }
                     let npcMarker = SKShapeNode(circleOfRadius: 8)
                     npcMarker.fillColor = .yellow
                     npcMarker.strokeColor = .orange
@@ -163,15 +195,16 @@ class OverworldScene: SKScene {
                         .scale(to: 1.3, duration: 0.5),
                         .scale(to: 1.0, duration: 0.5)
                     ])))
-                    // Exclamation mark
                     let excl = SKLabelNode(fontNamed: "Courier-Bold")
                     excl.text = "!"
                     excl.fontSize = 16
                     excl.fontColor = .red
                     excl.position = CGPoint(x: 0, y: 16)
                     tile.addChild(excl)
-                } else if tileType == .water {
-                    // Animate water
+                }
+                
+                // Water animation always applied
+                if tileType == .water {
                     tile.run(.repeatForever(.sequence([
                         .colorize(with: SKColor(red: 0.15, green: 0.35, blue: 0.85, alpha: 1), colorBlendFactor: 0.3, duration: 1.0),
                         .colorize(with: SKColor(red: 0.1, green: 0.3, blue: 0.8, alpha: 1), colorBlendFactor: 0.0, duration: 1.0)
@@ -186,7 +219,7 @@ class OverworldScene: SKScene {
     }
     
     func setupPlayer() {
-        // Ground shadow as a scene sibling — stays on the ground while character bobs above it
+        // Ground shadow
         let shadow = SKShapeNode(ellipseOf: CGSize(width: 48, height: 14))
         shadow.fillColor = SKColor(white: 0, alpha: 0.3)
         shadow.strokeColor = .clear
@@ -194,8 +227,17 @@ class OverworldScene: SKScene {
         shadow.zPosition = 8
         addChild(shadow)
         
-        playerNode = PixelArtRenderer.drawCharacter(primary: partyColor, secondary: partySecondary)
-        playerNode.setScale(2.0)
+        // Fix 1: Load PNG asset for player character; fall back to procedural renderer
+        if let texture = tryTexture(named: playerCharacterID) {
+            let spriteSize = CGSize(width: 24, height: 32)
+            let sprite = SKSpriteNode(texture: texture, size: spriteSize)
+            sprite.setScale(2.0)
+            playerNode = sprite
+        } else {
+            playerNode = PixelArtRenderer.drawCharacter(primary: partyColor, secondary: partySecondary)
+            playerNode.setScale(2.0)
+        }
+        
         playerNode.zPosition = 10
         updatePlayerPosition(animated: false)
         addChild(playerNode)
@@ -211,7 +253,6 @@ class OverworldScene: SKScene {
     }
     
     func setupControls() {
-        // D-pad overlay
         let dpadContainer = SKNode()
         dpadContainer.zPosition = 100
         dpadContainer.name = "dpad"
@@ -245,12 +286,10 @@ class OverworldScene: SKScene {
         
         cameraNode2.addChild(dpadContainer)
         
-        // Position d-pad bottom-left
         let offsetX = -(size.width / 2) + 80
         let offsetY = -(size.height / 2) + 80
         dpadContainer.position = CGPoint(x: offsetX, y: offsetY)
         
-        // Menu button
         let menuBtn = SKShapeNode(rectOf: CGSize(width: 70, height: 30), cornerRadius: 6)
         menuBtn.fillColor = SKColor(white: 0.2, alpha: 0.7)
         menuBtn.strokeColor = .yellow
@@ -267,7 +306,6 @@ class OverworldScene: SKScene {
         menuBtn.addChild(menuLabel)
         cameraNode2.addChild(menuBtn)
         
-        // Action button
         let actionBtn = SKShapeNode(rectOf: CGSize(width: 50, height: 50), cornerRadius: 25)
         actionBtn.fillColor = SKColor(red: 0.8, green: 0.6, blue: 0.1, alpha: 0.8)
         actionBtn.strokeColor = .yellow
@@ -290,7 +328,6 @@ class OverworldScene: SKScene {
             x: CGFloat(playerX) * tileSize + tileSize / 2,
             y: CGFloat(mapData.count - 1 - playerY) * tileSize + tileSize / 2
         )
-        // Shadow sits at ground level directly under the character (doesn't bob)
         let shadowPos = CGPoint(x: pos.x + 28, y: pos.y + 2)
         
         if animated {
@@ -368,30 +405,48 @@ class OverworldScene: SKScene {
             movePlayer(dx: dx, dy: dy)
             activeMoveDir = (dx, dy)
             
-            // Keep moving while held — fires after initial delay then at interval
+            // Fix 2: Cancel any running timers
+            moveTimerInitial?.invalidate()
+            moveTimerInitial = nil
             moveTimer?.invalidate()
-            moveTimer = Timer.scheduledTimer(withTimeInterval: 0.18, repeats: true) { [weak self] _ in
+            moveTimer = nil
+            
+            // Fix 2: Hold-to-move with 0.35s initial delay then 0.18s repeat.
+            // Uses Timer(timeInterval:repeats:block:) + RunLoop.main.add(forMode: .common)
+            // so it keeps firing even during UITracking RunLoop mode (touch scroll).
+            let initial = Timer(timeInterval: 0.35, repeats: false) { [weak self] _ in
                 guard let self = self else { return }
-                self.movePlayer(dx: self.activeMoveDir.0, dy: self.activeMoveDir.1)
+                let repeat_ = Timer(timeInterval: 0.18, repeats: true) { [weak self] _ in
+                    guard let self = self else { return }
+                    self.movePlayer(dx: self.activeMoveDir.0, dy: self.activeMoveDir.1)
+                }
+                RunLoop.main.add(repeat_, forMode: .common)
+                self.moveTimer = repeat_
+                self.moveTimerInitial = nil
             }
+            RunLoop.main.add(initial, forMode: .common)
+            moveTimerInitial = initial
             return
         }
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        moveTimerInitial?.invalidate()
+        moveTimerInitial = nil
         moveTimer?.invalidate()
         moveTimer = nil
         activeMoveDir = (0, 0)
     }
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        moveTimerInitial?.invalidate()
+        moveTimerInitial = nil
         moveTimer?.invalidate()
         moveTimer = nil
         activeMoveDir = (0, 0)
     }
     
     func checkInteraction() {
-        // Check adjacent tiles for NPCs/doors
         let adjacent = [(0,-1),(0,1),(-1,0),(1,0),(0,0)]
         for (dx, dy) in adjacent {
             let cx = playerX + dx
@@ -412,7 +467,6 @@ class OverworldScene: SKScene {
         let mapWidth = CGFloat(mapData[0].count) * tileSize
         let mapHeight = CGFloat(mapData.count) * tileSize
         
-        // Floating dust motes / pollen particles
         let dustEmitter = SKEmitterNode()
         dustEmitter.particleBirthRate = 3
         dustEmitter.particleLifetime = 8
@@ -434,10 +488,8 @@ class OverworldScene: SKScene {
         dustEmitter.zPosition = 5
         addChild(dustEmitter)
         
-        // Chapter-specific atmosphere
         switch chapterNumber {
         case 2:
-            // Gerasene tombs — eerie fog
             let fog = SKEmitterNode()
             fog.particleBirthRate = 2
             fog.particleLifetime = 6
@@ -456,7 +508,6 @@ class OverworldScene: SKScene {
             fog.zPosition = 4
             addChild(fog)
         case 4:
-            // Sea — rain effect
             let rain = SKEmitterNode()
             rain.particleBirthRate = 30
             rain.particleLifetime = 1.5
@@ -478,7 +529,6 @@ class OverworldScene: SKScene {
             break
         }
         
-        // Subtle vignette overlay on camera
         let vignetteSize = size
         let vignette = SKShapeNode(rectOf: CGSize(width: vignetteSize.width + 100, height: vignetteSize.height + 100))
         vignette.fillColor = .clear

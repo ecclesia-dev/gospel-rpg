@@ -1,5 +1,15 @@
 import Foundation
 
+// MARK: - Battle Effect Delegate (Fix 3)
+// BattleScene implements this so BattleSystem can push damage/heal events directly
+// instead of BattleScene polling every frame.
+protocol BattleEffectDelegate: AnyObject {
+    /// Called immediately after a character takes damage so the scene can show hit effects.
+    func triggerEffect(characterId: String, damage: Int, isEnemy: Bool)
+    /// Called immediately after a character is healed so the scene can show heal effects.
+    func triggerHeal(characterId: String, amount: Int, isEnemy: Bool)
+}
+
 // MARK: - Battle System
 
 class BattleSystem: ObservableObject {
@@ -16,6 +26,9 @@ class BattleSystem: ObservableObject {
     
     var onBattleEnd: ((Bool) -> Void)?
     
+    /// Fix 3: Weak delegate; BattleScene sets this to receive direct effect callbacks.
+    weak var effectDelegate: BattleEffectDelegate?
+    
     func startBattle(party: [GameCharacter], enemies: [GameCharacter]) {
         self.party = party
         self.enemies = enemies
@@ -23,7 +36,6 @@ class BattleSystem: ObservableObject {
         self.isBattleOver = false
         self.isVictory = false
         
-        // Build turn order by speed
         turnOrder = (party + enemies).sorted { $0.speed > $1.speed }
         currentTurnIndex = 0
         advanceToNextLivingTurn()
@@ -32,14 +44,12 @@ class BattleSystem: ObservableObject {
     func advanceToNextLivingTurn() {
         guard !isBattleOver else { return }
         
-        // Find next living character
         var attempts = 0
         while attempts < turnOrder.count {
             let current = turnOrder[currentTurnIndex % turnOrder.count]
             if current.isAlive {
                 isPlayerTurn = current.characterClass != .demon && current.characterClass != .obstacle
                 if !isPlayerTurn {
-                    // Auto-execute enemy turn after a small delay
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                         self.executeEnemyTurn(enemy: current)
                     }
@@ -60,7 +70,10 @@ class BattleSystem: ObservableObject {
     
     func executePlayerAttack(source: GameCharacter, target: GameCharacter) {
         let damage = calculateDamage(attacker: source, defender: target, power: source.attack)
+        let isEnemy = enemies.contains { $0.id == target.id }
         target.takeDamage(damage)
+        // Fix 3: Push effect directly to scene instead of polling
+        effectDelegate?.triggerEffect(characterId: target.id, damage: damage, isEnemy: isEnemy)
         battleLog.append("\(source.name) strikes \(target.name) for \(damage) damage!")
         
         checkBattleEnd()
@@ -75,7 +88,6 @@ class BattleSystem: ObservableObject {
             return
         }
         
-        // Show scripture reference
         if let ref = ability.scriptureRef {
             showScripture = "\(ref): \(ability.description)"
         }
@@ -85,11 +97,15 @@ class BattleSystem: ObservableObject {
                 let healAmount = ability.power + source.faith / 2
                 for member in party where member.isAlive {
                     member.heal(healAmount)
+                    // Fix 3: Push heal event
+                    effectDelegate?.triggerHeal(characterId: member.id, amount: healAmount, isEnemy: false)
                 }
                 battleLog.append("\(source.name) uses \(ability.name)! Party healed for \(healAmount) HP!")
             } else if let target = target {
                 let healAmount = ability.power + source.faith / 2
+                let isEnemy = enemies.contains { $0.id == target.id }
                 target.heal(healAmount)
+                effectDelegate?.triggerHeal(characterId: target.id, amount: healAmount, isEnemy: isEnemy)
                 battleLog.append("\(source.name) uses \(ability.name) on \(target.name)! Healed \(healAmount) HP!")
             }
         } else {
@@ -98,18 +114,21 @@ class BattleSystem: ObservableObject {
                 for enemy in enemies where enemy.isAlive {
                     let damage = calculateDamage(attacker: source, defender: enemy, power: ability.power + faithBonus)
                     enemy.takeDamage(damage)
+                    // Fix 3: Push damage event
+                    effectDelegate?.triggerEffect(characterId: enemy.id, damage: damage, isEnemy: true)
                     battleLog.append("\(ability.name) hits \(enemy.name) for \(damage)!")
                 }
             } else if let target = target {
+                let isEnemy = enemies.contains { $0.id == target.id }
                 let damage = calculateDamage(attacker: source, defender: target, power: ability.power + faithBonus)
                 target.takeDamage(damage)
+                effectDelegate?.triggerEffect(characterId: target.id, damage: damage, isEnemy: isEnemy)
                 battleLog.append("\(source.name): \"\(ability.description)\" — \(damage) damage to \(target.name)!")
             }
         }
         
         checkBattleEnd()
         if !isBattleOver {
-            // Clear scripture after a moment
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                 self.showScripture = nil
             }
@@ -134,19 +153,21 @@ class BattleSystem: ObservableObject {
         let livingParty = party.filter { $0.isAlive }
         guard !livingParty.isEmpty else { return }
         
-        // Pick a random ability
         let ability = enemy.abilities.randomElement()!
         
         if ability.targetsAll {
             for member in livingParty {
                 let damage = calculateDamage(attacker: enemy, defender: member, power: ability.power)
                 member.takeDamage(damage)
+                // Fix 3: Push damage event for each party member hit
+                effectDelegate?.triggerEffect(characterId: member.id, damage: damage, isEnemy: false)
             }
             battleLog.append("\(enemy.name) uses \(ability.name)! Hits all party members!")
         } else {
             let target = livingParty.randomElement()!
             let damage = calculateDamage(attacker: enemy, defender: target, power: ability.power)
             target.takeDamage(damage)
+            effectDelegate?.triggerEffect(characterId: target.id, damage: damage, isEnemy: false)
             battleLog.append("\(enemy.name) uses \(ability.name) on \(target.name) for \(damage) damage!")
         }
         
@@ -178,7 +199,7 @@ class BattleSystem: ObservableObject {
     func nextTurn() {
         currentTurnIndex += 1
         if currentTurnIndex >= turnOrder.count * 100 {
-            currentTurnIndex = 0 // Prevent overflow
+            currentTurnIndex = 0
         }
         advanceToNextLivingTurn()
     }

@@ -285,6 +285,10 @@ struct BattleView: View {
         scene.chapterNumber = chapter.number
         battleScene = scene
         
+        // Fix 3: Wire the effect delegate so BattleSystem can push hit/heal events
+        // directly to the scene instead of BattleScene polling HP every frame.
+        battleSystem.effectDelegate = scene
+        
         battleSystem.inventory = gameState.inventory
         battleSystem.startBattle(party: gameState.party, enemies: chapter.battleEnemies)
         battleSystem.onBattleEnd = { victory in
