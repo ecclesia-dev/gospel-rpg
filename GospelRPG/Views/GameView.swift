@@ -23,13 +23,13 @@ struct GameView: View {
                 
             case .chapterIntro:
                 ChapterIntroView(chapter: currentChapter) {
-                    // Show intro dialogue
+                    // Show intro dialogue as overlay — do NOT replace screen with black
                     currentDialogue = currentChapter.introDialogue
                     dialogueCompletion = {
                         currentDialogue = nil
                         gameState.currentScreen = .overworld
                     }
-                    gameState.currentScreen = .dialogue
+                    // Stay on chapterIntro so scene shows behind dialogue
                 }
                 
             case .overworld:
@@ -46,13 +46,13 @@ struct GameView: View {
                 )
                 
             case .dialogue:
-                if let dialogue = currentDialogue {
-                    // Show a dark background behind dialogue
-                    Color.black.ignoresSafeArea()
-                    DialogueView(dialogue: dialogue) {
-                        dialogueCompletion?()
-                    }
-                }
+                // Fallback: show overworld behind dialogue if screen was set to .dialogue
+                OverworldView(
+                    gameState: gameState,
+                    chapter: currentChapter,
+                    onTrigger: {},
+                    onMenu: {}
+                )
                 
             case .battle:
                 BattleView(
@@ -108,6 +108,13 @@ struct GameView: View {
                 EmptyView()
             }
             
+            // Dialogue overlay — shown on top of any screen, never replaces the scene with black
+            if let dialogue = currentDialogue {
+                DialogueView(dialogue: dialogue) {
+                    dialogueCompletion?()
+                }
+            }
+            
             // Menu overlay
             if showMenu {
                 MenuView(gameState: gameState) {
@@ -157,7 +164,7 @@ struct GameView: View {
                 gameState.currentScreen = .title
             }
         }
-        gameState.currentScreen = .dialogue
+        // Stay on current screen — dialogue renders as overlay, not a screen replacement
     }
     
     func handleDefeat() {

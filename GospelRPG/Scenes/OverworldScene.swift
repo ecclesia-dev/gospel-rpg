@@ -26,6 +26,10 @@ class OverworldScene: SKScene {
     
     var chapterNumber: Int = 1
     
+    // Hold-to-move support
+    var moveTimer: Timer?
+    var activeMoveDir: (Int, Int) = (0, 0)
+    
     override func didMove(to view: SKView) {
         backgroundColor = SKColor(red: 0.08, green: 0.12, blue: 0.06, alpha: 1)
         setupMap()
@@ -182,13 +186,20 @@ class OverworldScene: SKScene {
     }
     
     func setupPlayer() {
+        // Ground shadow as a scene sibling — stays on the ground while character bobs above it
+        let shadow = SKShapeNode(ellipseOf: CGSize(width: 48, height: 14))
+        shadow.fillColor = SKColor(white: 0, alpha: 0.3)
+        shadow.strokeColor = .clear
+        shadow.name = "playerShadow"
+        shadow.zPosition = 8
+        addChild(shadow)
+        
         playerNode = PixelArtRenderer.drawCharacter(primary: partyColor, secondary: partySecondary)
         playerNode.setScale(2.0)
         playerNode.zPosition = 10
         updatePlayerPosition(animated: false)
         addChild(playerNode)
         PixelArtRenderer.addHaloGlow(to: playerNode)
-        PixelArtRenderer.addShadow(to: playerNode)
         PixelArtRenderer.addIdleAnimation(to: playerNode)
     }
     
@@ -279,13 +290,18 @@ class OverworldScene: SKScene {
             x: CGFloat(playerX) * tileSize + tileSize / 2,
             y: CGFloat(mapData.count - 1 - playerY) * tileSize + tileSize / 2
         )
+        // Shadow sits at ground level directly under the character (doesn't bob)
+        let shadowPos = CGPoint(x: pos.x + 28, y: pos.y + 2)
+        
         if animated {
             playerNode.run(.move(to: pos, duration: 0.15)) {
                 self.isMoving = false
                 self.checkTrigger()
             }
+            childNode(withName: "playerShadow")?.run(.move(to: shadowPos, duration: 0.15))
         } else {
             playerNode.position = pos
+            childNode(withName: "playerShadow")?.position = shadowPos
         }
     }
     
@@ -332,16 +348,46 @@ class OverworldScene: SKScene {
         let nodes = cameraNode2.nodes(at: location)
         
         for node in nodes {
+            var dx = 0, dy = 0
             switch node.name {
-            case "btn_up": movePlayer(dx: 0, dy: -1)
-            case "btn_down": movePlayer(dx: 0, dy: 1)
-            case "btn_left": movePlayer(dx: -1, dy: 0)
-            case "btn_right": movePlayer(dx: 1, dy: 0)
-            case "btn_action": checkInteraction()
-            case "btn_menu": overworldDelegate?.didRequestMenu()
-            default: break
+            case "btn_up":    dy = -1
+            case "btn_down":  dy =  1
+            case "btn_left":  dx = -1
+            case "btn_right": dx =  1
+            case "btn_action":
+                checkInteraction()
+                return
+            case "btn_menu":
+                overworldDelegate?.didRequestMenu()
+                return
+            default:
+                continue
             }
+            
+            // Move immediately on first tap
+            movePlayer(dx: dx, dy: dy)
+            activeMoveDir = (dx, dy)
+            
+            // Keep moving while held — fires after initial delay then at interval
+            moveTimer?.invalidate()
+            moveTimer = Timer.scheduledTimer(withTimeInterval: 0.18, repeats: true) { [weak self] _ in
+                guard let self = self else { return }
+                self.movePlayer(dx: self.activeMoveDir.0, dy: self.activeMoveDir.1)
+            }
+            return
         }
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        moveTimer?.invalidate()
+        moveTimer = nil
+        activeMoveDir = (0, 0)
+    }
+    
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        moveTimer?.invalidate()
+        moveTimer = nil
+        activeMoveDir = (0, 0)
     }
     
     func checkInteraction() {

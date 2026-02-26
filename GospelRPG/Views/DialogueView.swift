@@ -15,8 +15,8 @@ struct DialogueView: View {
     
     var body: some View {
         ZStack {
-            // Dark overlay
-            Color.black.opacity(0.7)
+            // Semi-transparent overlay — lets the game scene show through
+            Color.black.opacity(0.45)
                 .ignoresSafeArea()
             
             VStack {
