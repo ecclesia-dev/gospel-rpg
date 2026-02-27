@@ -126,7 +126,7 @@ extension GameCharacter: Codable {
         case secondaryRed, secondaryGreen, secondaryBlue, secondaryAlpha
     }
     
-    convenience init(from decoder: Decoder) throws {
+    required convenience init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         let id           = try c.decode(String.self,         forKey: .id)
         let name         = try c.decode(String.self,         forKey: .name)
