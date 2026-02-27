@@ -15,7 +15,7 @@ struct ChapterData {
                 DialogueLine(speaker: "Jesus", text: "The time has come. The kingdom of God has come near. Repent and believe the good news!", scriptureRef: "Mark 1:15", speakerColor: .white),
                 DialogueLine(speaker: "Narrator", text: "Just then, a man in the synagogue who was possessed by an impure spirit cried out...", scriptureRef: "Mark 1:23"),
                 DialogueLine(speaker: "Unclean Spirit", text: "\"What do you want with us, Jesus of Nazareth? Have you come to destroy us? I know who you are—the Holy One of God!\"", scriptureRef: "Mark 1:24", speakerColor: .red),
-                DialogueLine(speaker: "Jesus", text: "We must free this man from the spirit's grip. Stand firm in faith!", speakerColor: .white),
+                DialogueLine(speaker: "Narrator", text: "Jesus turns to His disciples, ready to confront the unclean spirit. They prepare themselves."),
             ],
             battleEnemies: [CharacterFactory.synagogueSpirit()],
             postBattleDialogue: [
