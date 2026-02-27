@@ -129,7 +129,7 @@ struct GameView: View {
         .preferredColorScheme(.dark)
         .statusBarHidden(true)
         // Fix 6: Play correct SNES-style theme on screen transitions
-        .onChange(of: gameState.currentScreen) { screen in
+        .onChange(of: gameState.currentScreen) { _, screen in
             switch screen {
             case .title:       MusicEngine.shared.play(theme: .title)
             case .overworld:   MusicEngine.shared.play(theme: .overworld)
