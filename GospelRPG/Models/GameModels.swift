@@ -13,7 +13,7 @@ enum CharacterClass: String, Codable {
 enum Element: String, Codable {
     case prayer = "Prayer"
     case scripture = "Scripture"
-    case holyWater = "Holy Water"
+    case blessing = "Blessing"
     case layingHands = "Laying on Hands"
     case faith = "Faith"
     case darkness = "Darkness"
@@ -57,7 +57,11 @@ class GameCharacter: Identifiable, ObservableObject {
     @Published var faith: Int
     
     var abilities: [Ability]
-    var isAlive: Bool { hp > 0 }
+    /// Jesus (Messiah) is never defeated — He is immune to the KO state.
+    var isAlive: Bool {
+        if characterClass == .messiah { return true }
+        return hp > 0
+    }
     
     let primaryColor: SKColor
     let secondaryColor: SKColor
@@ -84,7 +88,9 @@ class GameCharacter: Identifiable, ObservableObject {
     }
     
     func takeDamage(_ amount: Int) {
-        hp = max(0, hp - amount)
+        // Jesus (Messiah) cannot fall below 1 HP — He is never defeated.
+        let floor = (characterClass == .messiah) ? 1 : 0
+        hp = max(floor, hp - amount)
     }
     
     func heal(_ amount: Int) {

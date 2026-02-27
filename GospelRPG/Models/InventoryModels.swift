@@ -111,7 +111,7 @@ struct ItemDB {
     )
     static let swordOfTheSpirit = Item(
         id: "sword_spirit", name: "Sword of the Spirit",
-        description: "The Word of God, sharper than any two-edged sword.",
+        description: "The Word of God, sharper than any two-edged sword. (Scriptural equipment from the Pauline letters.)",
         scriptureRef: "Ephesians 6:17", slot: .weapon,
         attackBonus: 12, defenseBonus: 0, faithBonus: 8, hpBonus: 0, mpBonus: 5, healAmount: 0, icon: "⚔️"
     )
@@ -137,7 +137,7 @@ struct ItemDB {
     )
     static let armorOfGod = Item(
         id: "armor_god", name: "Armor of God",
-        description: "Put on the full armor of God!",
+        description: "Put on the full armor of God! (Scriptural equipment from the Pauline letters.)",
         scriptureRef: "Ephesians 6:11", slot: .body,
         attackBonus: 3, defenseBonus: 10, faithBonus: 8, hpBonus: 20, mpBonus: 5, healAmount: 0, icon: "🛡️"
     )
@@ -151,7 +151,7 @@ struct ItemDB {
     )
     static let gospelSandals = Item(
         id: "gospel_sandals", name: "Gospel Sandals",
-        description: "Fitted with readiness from the gospel of peace.",
+        description: "Fitted with readiness from the gospel of peace. (Scriptural equipment from the Pauline letters.)",
         scriptureRef: "Ephesians 6:15", slot: .feet,
         attackBonus: 0, defenseBonus: 4, faithBonus: 4, hpBonus: 5, mpBonus: 5, healAmount: 0, icon: "🥿"
     )
@@ -165,7 +165,7 @@ struct ItemDB {
     )
     static let shieldOfFaith = Item(
         id: "shield_faith", name: "Shield of Faith",
-        description: "Extinguish all the flaming arrows of the evil one.",
+        description: "Extinguish all the flaming arrows of the evil one. (Scriptural equipment from the Pauline letters.)",
         scriptureRef: "Ephesians 6:16", slot: .accessory,
         attackBonus: 0, defenseBonus: 8, faithBonus: 6, hpBonus: 10, mpBonus: 0, healAmount: 0, icon: "🛡️"
     )

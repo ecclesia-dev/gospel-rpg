@@ -96,7 +96,7 @@ struct BattleView: View {
                 } else {
                     // Battle over
                     VStack(spacing: 12) {
-                        Text(battleSystem.isVictory ? "✨ VICTORY! ✨" : "💔 Defeated...")
+                        Text(battleSystem.isVictory ? "✨ VICTORY! ✨" : "💔 The disciples falter...")
                             .font(.custom("Courier-Bold", size: 24))
                             .foregroundColor(battleSystem.isVictory ? .yellow : .red)
                         

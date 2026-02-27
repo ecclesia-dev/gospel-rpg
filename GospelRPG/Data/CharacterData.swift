@@ -29,10 +29,10 @@ struct AbilityDB {
         element: .layingHands, power: 50, mpCost: 6, targetsAll: false, heals: true,
         scriptureRef: "Mark 6:5"
     )
-    static let holyWater = Ability(
-        id: "holy_water", name: "Holy Water", description: "Splash purifying water on the enemy",
-        element: .holyWater, power: 25, mpCost: 4, targetsAll: false, heals: false,
-        scriptureRef: nil
+    static let blessing = Ability(
+        id: "blessing", name: "Blessing", description: "Invoke a blessing upon the enemy to drive out evil",
+        element: .blessing, power: 25, mpCost: 4, targetsAll: false, heals: false,
+        scriptureRef: "Mark 1:25"
     )
     
     // Apostle abilities
@@ -66,10 +66,10 @@ struct AbilityDB {
         element: .faith, power: 15, mpCost: 4, targetsAll: false, heals: true,
         scriptureRef: "Mark 3:16"
     )
-    static let splashHolyWater = Ability(
-        id: "splash_hw", name: "Splash Holy Water", description: "Throws holy water at all enemies",
-        element: .holyWater, power: 20, mpCost: 6, targetsAll: true, heals: false,
-        scriptureRef: nil
+    static let splashBlessing = Ability(
+        id: "splash_blessing", name: "Splash Blessing", description: "A sweeping blessing cast upon all enemies",
+        element: .blessing, power: 20, mpCost: 6, targetsAll: true, heals: false,
+        scriptureRef: "Mark 1:25"
     )
     
     // Storm abilities (for Ch4 Calming the Storm)
@@ -184,7 +184,7 @@ struct CharacterFactory {
             id: "andrew", name: "Andrew", characterClass: .apostle,
             title: "Fisher of Men",
             level: 3, hp: 100, mp: 50, attack: 15, defense: 14, speed: 12, faith: 30,
-            abilities: [.basicAttack, AbilityDB.castNet, AbilityDB.fishersOfMen, AbilityDB.holyWater],
+            abilities: [.basicAttack, AbilityDB.castNet, AbilityDB.fishersOfMen, AbilityDB.blessing],
             primaryColor: SKColor(red: 0.2, green: 0.6, blue: 0.5, alpha: 1),
             secondaryColor: SKColor(red: 0.5, green: 0.4, blue: 0.3, alpha: 1)
         )
@@ -195,7 +195,7 @@ struct CharacterFactory {
             id: "james", name: "James", characterClass: .apostle,
             title: "Son of Thunder",
             level: 3, hp: 110, mp: 45, attack: 22, defense: 15, speed: 11, faith: 28,
-            abilities: [.basicAttack, AbilityDB.thunderCall, AbilityDB.pray, AbilityDB.splashHolyWater],
+            abilities: [.basicAttack, AbilityDB.thunderCall, AbilityDB.pray, AbilityDB.splashBlessing],
             primaryColor: SKColor(red: 0.7, green: 0.2, blue: 0.2, alpha: 1),
             secondaryColor: SKColor(red: 0.8, green: 0.7, blue: 0.1, alpha: 1)
         )
@@ -206,7 +206,7 @@ struct CharacterFactory {
             id: "john", name: "John", characterClass: .apostle,
             title: "The Beloved",
             level: 3, hp: 90, mp: 60, attack: 14, defense: 12, speed: 14, faith: 35,
-            abilities: [.basicAttack, AbilityDB.pray, AbilityDB.boldProclamation, AbilityDB.holyWater],
+            abilities: [.basicAttack, AbilityDB.pray, AbilityDB.boldProclamation, AbilityDB.blessing],
             primaryColor: SKColor(red: 0.2, green: 0.4, blue: 0.7, alpha: 1),
             secondaryColor: .white
         )
@@ -228,7 +228,7 @@ struct CharacterFactory {
             id: "bartholomew", name: "Bartholomew", characterClass: .apostle,
             title: "The Honest One",
             level: 3, hp: 105, mp: 45, attack: 16, defense: 16, speed: 10, faith: 26,
-            abilities: [.basicAttack, AbilityDB.rockStand, AbilityDB.pray, AbilityDB.splashHolyWater],
+            abilities: [.basicAttack, AbilityDB.rockStand, AbilityDB.pray, AbilityDB.splashBlessing],
             primaryColor: SKColor(red: 0.4, green: 0.6, blue: 0.3, alpha: 1),
             secondaryColor: SKColor(red: 0.3, green: 0.4, blue: 0.2, alpha: 1)
         )
@@ -272,7 +272,7 @@ struct CharacterFactory {
     // Chapter 4 enemies
     static func theGreatStorm() -> GameCharacter {
         GameCharacter(
-            id: "great_storm", name: "The Great Storm", characterClass: .demon,
+            id: "great_storm", name: "The Great Storm", characterClass: .obstacle,
             title: "Furious Squall",
             level: 6, hp: 300, mp: 99, attack: 20, defense: 12, speed: 14, faith: 0,
             abilities: [AbilityDB.crashingWave, AbilityDB.howlingGale, AbilityDB.swallowingDeep],
@@ -283,7 +283,7 @@ struct CharacterFactory {
 
     static func ragingWind() -> GameCharacter {
         GameCharacter(
-            id: "raging_wind_\(Int.random(in: 1000...9999))", name: "Raging Wind", characterClass: .demon,
+            id: "raging_wind_\(Int.random(in: 1000...9999))", name: "Raging Wind", characterClass: .obstacle,
             title: "Storm Servant",
             level: 4, hp: 80, mp: 99, attack: 14, defense: 5, speed: 16, faith: 0,
             abilities: [AbilityDB.howlingGale, AbilityDB.darkCry],

@@ -217,28 +217,19 @@ struct GameOverView: View {
                 Text("💔")
                     .font(.system(size: 60))
                 
-                Text("The party has fallen...")
+                Text("The disciples' faith has faltered...")
                     .font(.custom("Courier-Bold", size: 22))
                     .foregroundColor(.red)
-                
-                Text("But God's plan cannot be stopped!")
+
+                Text("But the Lord's power is never diminished!")
                     .font(.custom("Courier", size: 16))
                     .foregroundColor(.white)
-                
+
                 VStack(spacing: 4) {
-                    Text("\"Be strong and courageous.")
+                    Text("\"Fear not, only believe.\"")
                         .font(.custom("Courier", size: 13))
                         .foregroundColor(.gray)
-                    Text("Do not be afraid; do not be discouraged,")
-                        .font(.custom("Courier", size: 13))
-                        .foregroundColor(.gray)
-                    Text("for the Lord your God will be with you")
-                        .font(.custom("Courier", size: 13))
-                        .foregroundColor(.gray)
-                    Text("wherever you go.\"")
-                        .font(.custom("Courier", size: 13))
-                        .foregroundColor(.gray)
-                    Text("— Joshua 1:9")
+                    Text("— Mark 5:36")
                         .font(.custom("Courier-Bold", size: 12))
                         .foregroundColor(.yellow)
                 }

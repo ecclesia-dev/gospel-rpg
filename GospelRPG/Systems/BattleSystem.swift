@@ -206,22 +206,23 @@ class BattleSystem: ObservableObject {
     
     func checkBattleEnd() {
         let allEnemiesDead = enemies.allSatisfy { !$0.isAlive }
-        let allPartyDead = party.allSatisfy { !$0.isAlive }
-        
+        // Game-over only when all apostle party members fall — Jesus is never defeated.
+        let allApostlesDead = party.filter { $0.characterClass == .apostle }.allSatisfy { !$0.isAlive }
+
         if allEnemiesDead {
             isBattleOver = true
             isVictory = true
             let messages = [
-                "✨ Victory! \"Submit yourselves to God. Resist the devil, and he will flee from you.\" — James 4:7",
-                "✨ Victory! The power of God prevails! \"No weapon formed against you shall prosper.\" — Isaiah 54:17",
-                "✨ Victory! \"Thanks be to God! He gives us the victory through our Lord Jesus Christ.\" — 1 Cor 15:57",
+                "✨ Victory! \"No man can enter into the house of the strong man and rob him of his goods, unless he first bind the strong man.\" — Mark 3:27",
+                "✨ Victory! The power of God prevails!",
+                "✨ Victory! \"He is risen, he is not here.\" — Mark 16:6",
             ]
             battleLog.append(messages.randomElement()!)
             onBattleEnd?(true)
-        } else if allPartyDead {
+        } else if allApostlesDead {
             isBattleOver = true
             isVictory = false
-            battleLog.append("💔 The party has fallen... \"Be strong and courageous, for the Lord your God is with you.\" — Joshua 1:9")
+            battleLog.append("💔 The disciples' faith has faltered... \"Fear not, only believe.\" — Mark 5:36")
             onBattleEnd?(false)
         }
     }
