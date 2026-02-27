@@ -25,6 +25,7 @@
 		A10016 /* MenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10016; };
 		A10017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10017; };
 		A10018 /* InventoryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10018; };
+		A10019 /* MusicEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10019; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +48,7 @@
 		B10016 /* MenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuView.swift; sourceTree = "<group>"; };
 		B10017 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B10018 /* InventoryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryModels.swift; sourceTree = "<group>"; };
+		B10019 /* MusicEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicEngine.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +80,7 @@
 				D10006 /* Systems */,
 				D10008 /* Data */,
 				B10017 /* Assets.xcassets */,
+				D10009 /* Audio */,
 			);
 			path = GospelRPG;
 			sourceTree = "<group>";
@@ -139,6 +142,14 @@
 				B10006 /* MapData.swift */,
 			);
 			path = Data;
+			sourceTree = "<group>";
+		};
+		D10009 /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				B10019 /* MusicEngine.swift */,
+			);
+			path = Audio;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -227,6 +238,7 @@
 				A10015 /* ChapterIntroView.swift in Sources */,
 				A10016 /* MenuView.swift in Sources */,
 				A10018 /* InventoryModels.swift in Sources */,
+				A10019 /* MusicEngine.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -111,12 +111,8 @@ class GameCharacter: Identifiable, ObservableObject {
         hp = maxHP
         mp = maxMP
     }
-}
 
-// MARK: - GameCharacter + Codable (Fix 5)
-// SKColor is not Codable; we encode its RGBA components as Double.
-
-extension GameCharacter: Codable {
+    // MARK: - Codable support (CodingKeys + required init must live in the class body)
     enum CodingKeys: String, CodingKey {
         case id, name, characterClass, title
         case level, hp, maxHP, mp, maxMP
@@ -153,17 +149,22 @@ extension GameCharacter: Codable {
         let primaryColor   = SKColor(red: CGFloat(pr), green: CGFloat(pg), blue: CGFloat(pb), alpha: CGFloat(pa))
         let secondaryColor = SKColor(red: CGFloat(sr), green: CGFloat(sg), blue: CGFloat(sb), alpha: CGFloat(sa))
         
-        // Init sets hp = maxHP; we'll override with the saved current hp below.
         self.init(id: id, name: name, characterClass: charClass, title: title,
                   level: level, hp: maxHP, mp: maxMP,
                   attack: attack, defense: defense, speed: speed, faith: faith,
                   abilities: abilities, primaryColor: primaryColor, secondaryColor: secondaryColor)
         
-        // Restore current hp/mp (may differ from max after damage)
         self.hp = try c.decode(Int.self, forKey: .hp)
         self.mp = try c.decode(Int.self, forKey: .mp)
     }
-    
+}
+
+// MARK: - GameCharacter + Codable (Fix 5)
+// SKColor is not Codable; we encode its RGBA components as Double.
+
+extension GameCharacter: Codable {
+    // CodingKeys and required init(from:) live in the class body above.
+    // encode(to:) can safely live here.
     func encode(to encoder: Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encode(id,            forKey: .id)
