@@ -11,29 +11,38 @@ mkdir -p "$HOOK_DIR"
 
 cat > "$HOOK_FILE" << 'HOOKEOF'
 #!/bin/sh
-# Pre-push safety hook — blocks pushes of workspace files
-# Installed in all ecclesia-dev project repos
-
-FORBIDDEN="MEMORY.md USER.md SOUL.md IDENTITY.md AGENTS.md HEARTBEAT.md ORG.MD PIPELINE.md SPRINTS.md STATUS.md PROJECT_INDEX.md MISSION.md MISTAKES.md memory/ .secrets/ knowledge/"
+# Pre-push safety hook
+# Blocks pushes of workspace configuration files and from the workspace root
+# See internal documentation for the protected file list
 
 # Check that git root is NOT the workspace root
 GIT_ROOT=$(git rev-parse --show-toplevel)
 WORKSPACE="${OPENCLAW_WORKSPACE:-}"
 
 if [ -n "$WORKSPACE" ] && [ "$GIT_ROOT" = "$WORKSPACE" ]; then
-  echo "❌ PUSH BLOCKED: git root is the workspace root. This would leak personal files."
+  echo "❌ PUSH BLOCKED: cannot push from workspace root."
   echo "   Run git operations from inside the project directory only."
   exit 1
 fi
 
-# Check if any forbidden workspace files are tracked
-for f in $FORBIDDEN; do
-  if git ls-files --error-unmatch "$f" 2>/dev/null; then
-    echo "❌ PUSH BLOCKED: workspace file '$f' is tracked in this repo."
-    echo "   Remove it with: git rm --cached $f"
-    exit 1
-  fi
-done
+# Load the protected file list from the workspace (not stored in this repo)
+# See internal documentation for the protected file list
+if [ -n "$WORKSPACE" ] && [ -f "$WORKSPACE/.protected-files" ]; then
+  FORBIDDEN="$(cat "$WORKSPACE/.protected-files")"
+else
+  # Fall back to environment variable if workspace file is unavailable
+  FORBIDDEN="${OPENCLAW_PROTECTED_FILES:-}"
+fi
+
+if [ -n "$FORBIDDEN" ]; then
+  for f in $FORBIDDEN; do
+    if git ls-files --error-unmatch "$f" 2>/dev/null; then
+      echo "❌ PUSH BLOCKED: a protected workspace configuration file is tracked in this repo."
+      echo "   Remove it with: git rm --cached $f"
+      exit 1
+    fi
+  done
+fi
 
 echo "✅ Pre-push check passed."
 exit 0

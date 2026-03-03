@@ -64,8 +64,8 @@ struct OverworldView: View {
         if let leader = gameState.party.first {
             s.partyColor = leader.primaryColor
             s.partySecondary = leader.secondaryColor
-            // Fix 1: Tell the scene which PNG to load for the player character
-            s.playerCharacterID = leader.id
+            // Map character id → asset name (mirrors BattleScene.imageNameForCharacter)
+            s.playerCharacterID = leader.id == "simon" ? "peter" : leader.id
         }
         
         let b = OverworldBridge(onTrigger: onTrigger, onMenu: onMenu)

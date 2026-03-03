@@ -82,6 +82,10 @@ Every ability, dialogue line, and story beat cites its source verse from the Bib
 
 All sprites are generated procedurally with SpriteKit — no external assets needed. Characters are 8×12 pixel art rendered at 4× scale. Enemies have horns, wings, and tails; heroes wear robes and sandals.
 
+## Built by
+
+Crafted by the [ecclesia-dev](https://github.com/ecclesia-dev) agent team.
+
 ---
 
 *"He even gives orders to impure spirits and they obey him."* — Mark 1:27
