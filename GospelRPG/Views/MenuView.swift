@@ -24,11 +24,26 @@ struct MenuView: View {
                 }
                 .padding()
                 
-                // Chapter info
+                // Scene info and Faith meter
                 HStack {
-                    Text("Chapter \(gameState.currentChapter)")
-                        .font(.custom("Courier", size: 14))
-                        .foregroundColor(.white.opacity(0.7))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Scene \(gameState.currentChapter) of 12")
+                            .font(.custom("Courier", size: 14))
+                            .foregroundColor(.white.opacity(0.7))
+                        HStack(spacing: 4) {
+                            Text("✨ Faith:")
+                                .font(.custom("Courier", size: 12))
+                                .foregroundColor(.yellow)
+                            Text("\(gameState.partyFaith)")
+                                .font(.custom("Courier-Bold", size: 12))
+                                .foregroundColor(.yellow)
+                            if gameState.storyMode {
+                                Text("(Story Mode)")
+                                    .font(.custom("Courier", size: 11))
+                                    .foregroundColor(.green)
+                            }
+                        }
+                    }
                     Spacer()
                 }
                 .padding(.horizontal)

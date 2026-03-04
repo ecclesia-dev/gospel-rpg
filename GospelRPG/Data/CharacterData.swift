@@ -212,7 +212,9 @@ struct CharacterFactory {
             title: "Son of God",
             level: 5, hp: 200, mp: 100, attack: 25, defense: 20, speed: 15, faith: 50,
             abilities: [.basicAttack, AbilityDB.rebuke, AbilityDB.castOut, AbilityDB.prayerOfFaith,
-                       AbilityDB.layingOnHands, AbilityDB.wordOfGod],
+                       AbilityDB.layingOnHands, AbilityDB.wordOfGod, AbilityDB.peaceBeStill,
+                       AbilityDB.talithaCumi, AbilityDB.multiply, AbilityDB.greaterCommandment,
+                       AbilityDB.watchAndPray],
             primaryColor: .white, secondaryColor: SKColor(red: 0.9, green: 0.85, blue: 0.5, alpha: 1)
         )
     }
