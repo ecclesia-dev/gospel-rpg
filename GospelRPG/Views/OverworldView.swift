@@ -23,12 +23,15 @@ struct OverworldView: View {
             VStack {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Chapter \(chapter.number)")
-                            .font(.custom("Courier-Bold", size: 14))
+                        Text("Scene \(chapter.number) · Act \(chapter.act)")
+                            .font(.custom("Courier-Bold", size: 12))
                             .foregroundColor(.yellow)
                         Text(chapter.title)
                             .font(.custom("Courier", size: 11))
                             .foregroundColor(.white.opacity(0.7))
+                        Text(chapter.subtitle)
+                            .font(.custom("Courier", size: 9))
+                            .foregroundColor(.gray.opacity(0.8))
                     }
                     .padding(8)
                     .background(

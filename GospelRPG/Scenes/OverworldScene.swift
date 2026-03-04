@@ -57,16 +57,20 @@ class OverworldScene: SKScene {
     /// Maps a MapTile type to its xcassets image name.
     private func tileImageName(for tile: MapTile) -> String? {
         switch tile {
-        case .grass:    return "tile_grass"
-        case .water:    return "tile_water"
-        case .sand:     return "tile_sand"
-        case .path:     return "tile_dirt_path"
-        case .building: return "tile_wall_mud"
-        case .tree:     return "tile_tree"
-        case .mountain: return "tile_rock"
-        case .bridge:   return "tile_stone_floor"
-        case .door:     return "tile_door"
-        case .npc:      return "tile_grass"  // NPC tile uses grass base + marker overlay
+        case .grass:       return "tile_grass"
+        case .water:       return "tile_water"
+        case .sand:        return "tile_sand"
+        case .path:        return "tile_dirt_path"
+        case .building:    return "tile_wall_mud"
+        case .tree:        return "tile_tree"
+        case .mountain:    return "tile_rock"
+        case .bridge:      return "tile_stone_floor"
+        case .door:        return "tile_door"
+        case .npc:         return "tile_grass"
+        // New tile types — try named assets, fall back to procedural colour
+        case .darkGrass:   return "tile_dark_grass"
+        case .stone:       return "tile_stone_floor"
+        case .palmBranch:  return "tile_palm"
         }
     }
     
