@@ -3,26 +3,34 @@ import SwiftUI
 struct DialogueView: View {
     let dialogue: [DialogueLine]
     let onComplete: () -> Void
-    
+    var onFaithDelta: ((Int) -> Void)? = nil   // Called when a choice affects Faith
+
     @State private var currentIndex = 0
     @State private var displayedText = ""
     @State private var isTyping = false
     @State private var timer: Timer?
-    
+    @State private var choiceMade: Bool = false
+    @State private var insertedFollowUp: String? = nil
+    @State private var chosenFaithDelta: Int = 0
+
     var currentLine: DialogueLine {
         dialogue[min(currentIndex, dialogue.count - 1)]
     }
-    
+
+    var hasChoices: Bool {
+        !choiceMade && (currentLine.choices?.isEmpty == false)
+    }
+
     var body: some View {
         ZStack {
-            // Semi-transparent overlay — lets the game scene show through
+            // Semi-transparent overlay
             Color.black.opacity(0.45)
                 .ignoresSafeArea()
-            
+
             VStack {
                 Spacer()
-                
-                // Scripture reference banner (if applicable)
+
+                // Scripture reference banner
                 if let ref = currentLine.scriptureRef {
                     HStack {
                         Image(systemName: "book.fill")
@@ -43,27 +51,85 @@ struct DialogueView: View {
                     )
                     .padding(.bottom, 4)
                 }
-                
-                // Dialogue box
+
+                // Main dialogue box
                 VStack(alignment: .leading, spacing: 8) {
                     // Speaker name
                     Text(currentLine.speaker)
                         .font(.custom("Courier-Bold", size: 16))
                         .foregroundColor(Color(uiColor: currentLine.speakerColor))
-                    
-                    // Text with typewriter effect
-                    Text(displayedText)
-                        .font(.custom("Courier", size: 15))
-                        .foregroundColor(.white)
-                        .lineSpacing(4)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .frame(minHeight: 60)
-                    
-                    // Continue indicator
-                    if !isTyping {
+
+                    // Typewriter text (or follow-up after choice)
+                    if let followUp = insertedFollowUp {
+                        Text(followUp)
+                            .font(.custom("Courier", size: 14))
+                            .foregroundColor(chosenFaithDelta >= 0 ? .green : .orange)
+                            .lineSpacing(4)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .frame(minHeight: 40)
+                    } else {
+                        Text(displayedText)
+                            .font(.custom("Courier", size: 15))
+                            .foregroundColor(.white)
+                            .lineSpacing(4)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .frame(minHeight: 60)
+                    }
+
+                    // Faith Choices (DESIGN.md §3.2)
+                    if hasChoices && !isTyping, let choices = currentLine.choices {
+                        VStack(spacing: 6) {
+                            ForEach(choices) { choice in
+                                Button {
+                                    handleChoice(choice)
+                                } label: {
+                                    HStack {
+                                        Text(choice.label)
+                                            .font(.custom("Courier", size: 13))
+                                            .foregroundColor(.white)
+                                            .multilineTextAlignment(.leading)
+                                        Spacer()
+                                        if choice.faithDelta > 0 {
+                                            Text("✨+\(choice.faithDelta)")
+                                                .font(.custom("Courier-Bold", size: 11))
+                                                .foregroundColor(.green)
+                                        } else if choice.faithDelta < 0 {
+                                            Text("💭\(choice.faithDelta)")
+                                                .font(.custom("Courier-Bold", size: 11))
+                                                .foregroundColor(.orange)
+                                        }
+                                    }
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .fill(Color(red: 0.12, green: 0.08, blue: 0.22))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 4)
+                                                    .stroke(Color.yellow.opacity(0.4), lineWidth: 1)
+                                            )
+                                    )
+                                }
+                            }
+                        }
+                        .padding(.top, 4)
+                    }
+
+                    // Continue indicator (only when no choices pending)
+                    if !isTyping && !hasChoices && insertedFollowUp == nil {
                         HStack {
                             Spacer()
                             Text(currentIndex < dialogue.count - 1 ? "▼ Tap to continue" : "▼ Tap to close")
+                                .font(.custom("Courier", size: 12))
+                                .foregroundColor(.yellow.opacity(0.7))
+                        }
+                    }
+
+                    // After follow-up shown, tap to dismiss
+                    if insertedFollowUp != nil {
+                        HStack {
+                            Spacer()
+                            Text("▼ Tap to continue")
                                 .font(.custom("Courier", size: 12))
                                 .foregroundColor(.yellow.opacity(0.7))
                         }
@@ -96,13 +162,49 @@ struct DialogueView: View {
             startTyping()
         }
     }
-    
+
+    // MARK: - Choice Handler
+
+    func handleChoice(_ choice: DialogueChoice) {
+        choiceMade = true
+        chosenFaithDelta = choice.faithDelta
+
+        // Apply faith delta
+        onFaithDelta?(choice.faithDelta)
+
+        // Show follow-up text if present
+        if let followUp = choice.followUpText {
+            insertedFollowUp = followUp
+        } else {
+            // No follow-up; advance
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                advanceAfterChoice()
+            }
+        }
+    }
+
+    func advanceAfterChoice() {
+        insertedFollowUp = nil
+        choiceMade = false
+        chosenFaithDelta = 0
+        if currentIndex < dialogue.count - 1 {
+            currentIndex += 1
+            startTyping()
+        } else {
+            onComplete()
+        }
+    }
+
+    // MARK: - Typing
+
     func startTyping() {
         displayedText = ""
         isTyping = true
+        insertedFollowUp = nil
+        choiceMade = false
         let fullText = currentLine.text
         var charIndex = 0
-        
+
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 0.03, repeats: true) { t in
             if charIndex < fullText.count {
@@ -115,13 +217,19 @@ struct DialogueView: View {
             }
         }
     }
-    
+
     func handleTap() {
         if isTyping {
             // Skip to full text
             timer?.invalidate()
             displayedText = currentLine.text
             isTyping = false
+        } else if insertedFollowUp != nil {
+            // Dismiss follow-up
+            advanceAfterChoice()
+        } else if hasChoices {
+            // Don't advance — choices must be chosen explicitly
+            return
         } else if currentIndex < dialogue.count - 1 {
             currentIndex += 1
             startTyping()

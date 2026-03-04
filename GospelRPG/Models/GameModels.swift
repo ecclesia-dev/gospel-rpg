@@ -19,6 +19,27 @@ enum Element: String, Codable {
     case darkness = "Darkness"
 }
 
+// MARK: - Encounter Type (DESIGN.md §3.5)
+
+enum EncounterType: String, Codable {
+    case exorcism       // Standard turn-based: cast out demons
+    case natureMiracle  // Timed: reduce storm power before timer
+    case healing        // Scripted sequence: pray → lay hands → word
+    case faithTrial     // Dialogue-driven: no enemies, inner struggle
+    case provision      // Loaves & fishes: feed the crowd
+    case none           // Narrative/exploration only — no encounter
+}
+
+// MARK: - Dialogue Choice (DESIGN.md §3.2)
+
+struct DialogueChoice: Identifiable {
+    let id: String
+    let label: String
+    let faithDelta: Int          // Positive = gain, negative = loss
+    let followUpText: String?    // Optional line shown after choice
+    let scriptureRef: String?
+}
+
 // MARK: - Ability
 
 struct Ability: Identifiable, Codable {
@@ -112,7 +133,7 @@ class GameCharacter: Identifiable, ObservableObject {
         mp = maxMP
     }
 
-    // MARK: - Codable support (CodingKeys + required init must live in the class body)
+    // MARK: - Codable support
     enum CodingKeys: String, CodingKey {
         case id, name, characterClass, title
         case level, hp, maxHP, mp, maxMP
@@ -159,12 +180,10 @@ class GameCharacter: Identifiable, ObservableObject {
     }
 }
 
-// MARK: - GameCharacter + Codable (Fix 5)
-// SKColor is not Codable; we encode its RGBA components as Double.
+// MARK: - GameCharacter + Codable
+// SKColor is not Codable; encode its RGBA components as Double.
 
 extension GameCharacter: Codable {
-    // CodingKeys and required init(from:) live in the class body above.
-    // encode(to:) can safely live here.
     func encode(to encoder: Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encode(id,            forKey: .id)
@@ -213,12 +232,16 @@ struct DialogueLine {
     let text: String
     let scriptureRef: String?
     let speakerColor: SKColor
+    /// Optional faith-response choices (DESIGN.md §3.2)
+    let choices: [DialogueChoice]?
     
-    init(speaker: String, text: String, scriptureRef: String? = nil, speakerColor: SKColor = .white) {
+    init(speaker: String, text: String, scriptureRef: String? = nil,
+         speakerColor: SKColor = .white, choices: [DialogueChoice]? = nil) {
         self.speaker = speaker
         self.text = text
         self.scriptureRef = scriptureRef
         self.speakerColor = speakerColor
+        self.choices = choices
     }
 }
 
@@ -229,11 +252,41 @@ struct Chapter {
     let title: String
     let subtitle: String
     let scriptureRange: String
+    let act: Int                            // 1, 2, or 3
+    let encounterType: EncounterType
+    let hasBattle: Bool                     // false for narrative-only scenes
+    let showScriptureMemoryAfter: Bool      // true after Acts I and II climaxes
     let introDialogue: [DialogueLine]
     let battleEnemies: [GameCharacter]
     let postBattleDialogue: [DialogueLine]
     let recruitableApostles: [GameCharacter]
     let bossName: String
+    let discipleCommentary: [String]        // Post-encounter one-liners (DESIGN.md §3.2)
+    let faithReward: Int                    // Faith gained on completion
+
+    // Convenience init with defaults for backward compatibility
+    init(number: Int, title: String, subtitle: String, scriptureRange: String,
+         act: Int = 1, encounterType: EncounterType = .exorcism,
+         hasBattle: Bool = true, showScriptureMemoryAfter: Bool = false,
+         introDialogue: [DialogueLine], battleEnemies: [GameCharacter],
+         postBattleDialogue: [DialogueLine], recruitableApostles: [GameCharacter],
+         bossName: String, discipleCommentary: [String] = [], faithReward: Int = 3) {
+        self.number = number
+        self.title = title
+        self.subtitle = subtitle
+        self.scriptureRange = scriptureRange
+        self.act = act
+        self.encounterType = encounterType
+        self.hasBattle = hasBattle
+        self.showScriptureMemoryAfter = showScriptureMemoryAfter
+        self.introDialogue = introDialogue
+        self.battleEnemies = battleEnemies
+        self.postBattleDialogue = postBattleDialogue
+        self.recruitableApostles = recruitableApostles
+        self.bossName = bossName
+        self.discipleCommentary = discipleCommentary
+        self.faithReward = faithReward
+    }
 }
 
 // MARK: - Map Tile
@@ -249,19 +302,25 @@ enum MapTile: Int {
     case bridge = 7
     case door = 8
     case npc = 9
+    case darkGrass = 10     // For night scenes (Gethsemane, Walking on Water)
+    case stone = 11          // Jerusalem / Temple courts
+    case palmBranch = 12    // Triumphal Entry decoration
     
     var color: SKColor {
         switch self {
-        case .grass:    return SKColor(red: 0.2, green: 0.6, blue: 0.2, alpha: 1)
-        case .water:    return SKColor(red: 0.1, green: 0.3, blue: 0.8, alpha: 1)
-        case .sand:     return SKColor(red: 0.85, green: 0.75, blue: 0.5, alpha: 1)
-        case .path:     return SKColor(red: 0.65, green: 0.55, blue: 0.35, alpha: 1)
-        case .building: return SKColor(red: 0.6, green: 0.4, blue: 0.3, alpha: 1)
-        case .tree:     return SKColor(red: 0.1, green: 0.45, blue: 0.1, alpha: 1)
-        case .mountain: return SKColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 1)
-        case .bridge:   return SKColor(red: 0.55, green: 0.35, blue: 0.15, alpha: 1)
-        case .door:     return SKColor(red: 0.8, green: 0.6, blue: 0.1, alpha: 1)
-        case .npc:      return SKColor(red: 0.9, green: 0.2, blue: 0.2, alpha: 1)
+        case .grass:       return SKColor(red: 0.2, green: 0.6, blue: 0.2, alpha: 1)
+        case .water:       return SKColor(red: 0.1, green: 0.3, blue: 0.8, alpha: 1)
+        case .sand:        return SKColor(red: 0.85, green: 0.75, blue: 0.5, alpha: 1)
+        case .path:        return SKColor(red: 0.65, green: 0.55, blue: 0.35, alpha: 1)
+        case .building:    return SKColor(red: 0.6, green: 0.4, blue: 0.3, alpha: 1)
+        case .tree:        return SKColor(red: 0.1, green: 0.45, blue: 0.1, alpha: 1)
+        case .mountain:    return SKColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 1)
+        case .bridge:      return SKColor(red: 0.55, green: 0.35, blue: 0.15, alpha: 1)
+        case .door:        return SKColor(red: 0.8, green: 0.6, blue: 0.1, alpha: 1)
+        case .npc:         return SKColor(red: 0.9, green: 0.2, blue: 0.2, alpha: 1)
+        case .darkGrass:   return SKColor(red: 0.05, green: 0.15, blue: 0.05, alpha: 1)
+        case .stone:       return SKColor(red: 0.55, green: 0.52, blue: 0.48, alpha: 1)
+        case .palmBranch:  return SKColor(red: 0.3, green: 0.55, blue: 0.1, alpha: 1)
         }
     }
     
@@ -284,9 +343,13 @@ enum GameScreen {
     case victory
     case gameOver
     case menu
+    case actTransition   // Between Acts I→II and II→III (DESIGN.md §2.3)
+    case scriptureMemory // Scripture Memory mini-game (DESIGN.md §3.4)
+    case passionNarration // Solemn text narration of the Passion (DESIGN.md §4 Scene 11)
+    case ending          // Final epilogue scene with faith-based ending
 }
 
-// MARK: - Persistence helpers (Fix 5)
+// MARK: - Persistence helpers
 
 /// Flat, Codable snapshot of the inventory used for save/load.
 struct InventorySave: Codable {
@@ -303,6 +366,10 @@ struct GameStateSave: Codable {
     var playerMapY: Int
     var party: [GameCharacter]
     var inventorySave: InventorySave
+    var partyFaith: Int
+    var storyMode: Bool
+    var scriptureMemoryCorrect: Int
+    var scriptureMemoryTotal: Int
 }
 
 // MARK: - Game State
@@ -316,21 +383,33 @@ class GameState: ObservableObject {
     @Published var playerMapX: Int = 5
     @Published var playerMapY: Int = 5
     @Published var inventory: Inventory = Inventory()
+
+    // MARK: - Faith System (DESIGN.md §3.3)
+    /// Party-wide Faith score. Affects ability power scaling and endings.
+    @Published var partyFaith: Int = 0
+
+    // MARK: - Story Mode (DESIGN.md §6.1)
+    /// When true, enemy HP and ATK are halved. For younger players.
+    @Published var storyMode: Bool = false
+
+    // MARK: - Scripture Memory tracking (DESIGN.md §3.4)
+    @Published var scriptureMemoryCorrect: Int = 0
+    @Published var scriptureMemoryTotal: Int = 0
+
+    /// Add or remove party Faith, clamped to 0...100.
+    func adjustFaith(_ delta: Int) {
+        partyFaith = max(0, min(100, partyFaith + delta))
+    }
+
+    // MARK: - Persistence
     
-    // Fix 4: Removed `static let shared = GameState()`.
-    // GameView uses @StateObject private var gameState = GameState.load()
-    // to create exactly one instance, initialized from saved data.
-    
-    // MARK: - Fix 5: Persistence
-    
-    private static let saveKey = "gospel_rpg_save_v1"
+    private static let saveKey = "gospel_rpg_save_v2"
     
     private static func saveFileURL() -> URL {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        return docs.appendingPathComponent("gospel_rpg_save.json")
+        return docs.appendingPathComponent("gospel_rpg_save_v2.json")
     }
     
-    /// Persist the current game state to Documents/gospel_rpg_save.json.
     func save() {
         let invSave = InventorySave(
             items: inventory.items,
@@ -343,7 +422,11 @@ class GameState: ObservableObject {
             playerMapX: playerMapX,
             playerMapY: playerMapY,
             party: party,
-            inventorySave: invSave
+            inventorySave: invSave,
+            partyFaith: partyFaith,
+            storyMode: storyMode,
+            scriptureMemoryCorrect: scriptureMemoryCorrect,
+            scriptureMemoryTotal: scriptureMemoryTotal
         )
         do {
             let data = try JSONEncoder().encode(snap)
@@ -353,7 +436,6 @@ class GameState: ObservableObject {
         }
     }
     
-    /// Load a GameState from disk, or return a fresh default state.
     static func load() -> GameState {
         let state = GameState()
         let url = saveFileURL()
@@ -370,6 +452,10 @@ class GameState: ObservableObject {
         state.party = snap.party
         state.inventory.items = snap.inventorySave.items
         state.inventory.equipment = snap.inventorySave.equipment
+        state.partyFaith = snap.partyFaith
+        state.storyMode = snap.storyMode
+        state.scriptureMemoryCorrect = snap.scriptureMemoryCorrect
+        state.scriptureMemoryTotal = snap.scriptureMemoryTotal
         return state
     }
 }
