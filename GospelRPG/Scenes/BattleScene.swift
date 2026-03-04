@@ -48,7 +48,7 @@ class BattleScene: SKScene {
             case .messiah:   return "jesus"
             case .apostle:   return "disciple"
             case .demon:     return "enemy_demon"
-            case .obstacle:  return "enemy_pharisee"
+            case .obstacle:  return "enemy_obstacle"
             }
         }
     }
