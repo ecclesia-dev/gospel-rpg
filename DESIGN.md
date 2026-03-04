@@ -61,7 +61,7 @@ ACT I — GALILEE
   Scene 5: Loaves and Fishes (Mark 6:30-44) — ACT I CLIMAX
 
 ACT II — THE ROAD
-  Scene 6: Walking on Water (Mark 6:45-52)
+  Scene 6: Walking on Water (Matthew 14:22-33)
   Scene 7: The Boy with an Unclean Spirit (Mark 9:14-29)
   Scene 8: Blind Bartimaeus (Mark 10:46-52)
   Scene 9: The Triumphal Entry (Mark 11:1-11) — ACT II CLIMAX
@@ -256,7 +256,7 @@ The following systems are already well-implemented and should be preserved as-is
 ### Scene 6: Walking on Water 🆕 (New)
 
 - **Setting:** The Sea of Galilee at night — dark water, stars, wind
-- **Gospel passage:** Mark 6:45-52
+- **Gospel passage:** Matthew 14:22-33 (Mark 6:45-52 parallels the setting but omits Peter walking on water)
 - **Core mechanic:** Nature miracle (variant). The storm rages again, but this time Jesus is not in the boat — He walks on the water toward them. The party must hold out (Defend, Pray) for 5 turns until Jesus arrives. Then Peter asks to walk on the water — a Faith trial: the player controls Peter stepping onto the sea. Each turn, a fear prompt appears; faithful choices keep Peter walking, fearful choices cause him to sink (Jesus catches him).
 - **Encounter type:** Nature miracle → Faith trial (two-phase)
 - **Map:** 20×15 — The boat, dark water. Minimal land tiles. The overworld segment is short; the encounter is the centrepiece.
