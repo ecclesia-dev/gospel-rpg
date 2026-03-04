@@ -106,6 +106,55 @@ struct AbilityDB {
         scriptureRef: "Mark 5:25"
     )
 
+    // Philip's crowd ability (Scene 5)
+    static let crowdBlessing = Ability(
+        id: "crowd_blessing", name: "Crowd Blessing", description: "A sweeping blessing reaches many souls",
+        element: .blessing, power: 18, mpCost: 5, targetsAll: true, heals: false,
+        scriptureRef: "Mark 6:37"
+    )
+
+    // Thomas's unique ability — doubt turned to faith (DESIGN.md §5.3)
+    static let doubtTurnedFaith = Ability(
+        id: "doubt_faith", name: "Doubt Turned Faith", description: "\"I do believe, Lord: help my unbelief!\"",
+        element: .faith, power: 28, mpCost: 7, targetsAll: false, heals: false,
+        scriptureRef: "Mark 9:24"
+    )
+
+    // Mary Magdalene's devout prayer
+    static let devoutPrayer = Ability(
+        id: "devout_prayer", name: "Devout Prayer", description: "A prayer of total devotion",
+        element: .prayer, power: 30, mpCost: 6, targetsAll: false, heals: true,
+        scriptureRef: "Mark 16:1"
+    )
+
+    // Walking on Water: Peter's step of faith
+    static let stepOfFaith = Ability(
+        id: "step_of_faith", name: "Step of Faith", description: "\"Lord, if it be thou, bid me come to thee upon the water.\"",
+        element: .faith, power: 35, mpCost: 8, targetsAll: false, heals: false,
+        scriptureRef: "Matthew 14:28"
+    )
+
+    // Crowd-feeding / provision ability
+    static let multiply = Ability(
+        id: "multiply", name: "Give Thanks & Distribute", description: "Pray over the loaves and fish; watch them multiply",
+        element: .prayer, power: 0, mpCost: 8, targetsAll: true, heals: false,
+        scriptureRef: "Mark 6:41"
+    )
+
+    // Temple: Word of the Law
+    static let greaterCommandment = Ability(
+        id: "greater_cmd", name: "Greatest Commandment", description: "\"Thou shalt love the Lord thy God with thy whole heart.\"",
+        element: .scripture, power: 40, mpCost: 10, targetsAll: true, heals: false,
+        scriptureRef: "Mark 12:30"
+    )
+
+    // Gethsemane: wakefulness prayer
+    static let watchAndPray = Ability(
+        id: "watch_pray", name: "Watch and Pray", description: "\"Watch ye, and pray that ye enter not into temptation.\"",
+        element: .prayer, power: 20, mpCost: 5, targetsAll: false, heals: true,
+        scriptureRef: "Mark 14:38"
+    )
+
     // Jesus calming storm ability
     static let peaceBeStill = Ability(
         id: "peace_be_still", name: "Peace, Be Still!", description: "\"Quiet! Be still!\" — and the wind dies down.",
@@ -234,6 +283,42 @@ struct CharacterFactory {
         )
     }
 
+    // MARK: - Philip (Scene 5 recruit — DESIGN.md §5.3)
+    static func philip() -> GameCharacter {
+        GameCharacter(
+            id: "philip", name: "Philip", characterClass: .apostle,
+            title: "Seeker of Truth",
+            level: 3, hp: 95, mp: 55, attack: 13, defense: 12, speed: 13, faith: 28,
+            abilities: [.basicAttack, AbilityDB.pray, AbilityDB.crowdBlessing, AbilityDB.fishersOfMen],
+            primaryColor: SKColor(red: 0.5, green: 0.35, blue: 0.7, alpha: 1),
+            secondaryColor: SKColor(red: 0.3, green: 0.2, blue: 0.5, alpha: 1)
+        )
+    }
+
+    // MARK: - Thomas (Scene 7 recruit — ATK scales with partyFaith, DESIGN.md §5.3)
+    static func thomas() -> GameCharacter {
+        GameCharacter(
+            id: "thomas", name: "Thomas", characterClass: .apostle,
+            title: "The Questioner",
+            level: 3, hp: 100, mp: 45, attack: 12, defense: 13, speed: 11, faith: 20,
+            abilities: [.basicAttack, AbilityDB.pray, AbilityDB.boldProclamation, AbilityDB.doubtTurnedFaith],
+            primaryColor: SKColor(red: 0.6, green: 0.4, blue: 0.2, alpha: 1),
+            secondaryColor: SKColor(red: 0.8, green: 0.6, blue: 0.3, alpha: 1)
+        )
+    }
+
+    // MARK: - Mary Magdalene (Scene 12 temporary — DESIGN.md §5.4)
+    static func maryMagdalene() -> GameCharacter {
+        GameCharacter(
+            id: "mary_magdalene", name: "Mary Magdalene", characterClass: .apostle,
+            title: "First Witness",
+            level: 4, hp: 90, mp: 60, attack: 10, defense: 10, speed: 16, faith: 40,
+            abilities: [.basicAttack, AbilityDB.pray, AbilityDB.devoutPrayer],
+            primaryColor: SKColor(red: 0.8, green: 0.3, blue: 0.5, alpha: 1),
+            secondaryColor: SKColor(red: 0.9, green: 0.7, blue: 0.8, alpha: 1)
+        )
+    }
+
     // MARK: Enemies
     
     static func synagogueSpirit() -> GameCharacter {
@@ -323,6 +408,92 @@ struct CharacterFactory {
             abilities: [AbilityDB.darkCry, AbilityDB.convulse],
             primaryColor: SKColor(red: 0.5, green: 0.1, blue: 0.1, alpha: 1),
             secondaryColor: SKColor(red: 0.3, green: 0.0, blue: 0.3, alpha: 1)
+        )
+    }
+
+    // MARK: - New enemies for Scenes 5–11 (DESIGN.md §5.5)
+
+    /// Scene 5: Spirit of Hunger (provision encounter — narrative obstacle, not combat)
+    static func spiritOfHunger() -> GameCharacter {
+        GameCharacter(
+            id: "spirit_hunger", name: "Spirit of Hunger", characterClass: .obstacle,
+            title: "5,000 Hungry Souls",
+            level: 5, hp: 300, mp: 99, attack: 15, defense: 8, speed: 8, faith: 0,
+            abilities: [AbilityDB.wailOfDespair, AbilityDB.graspOfDeath],
+            primaryColor: SKColor(red: 0.4, green: 0.3, blue: 0.1, alpha: 1),
+            secondaryColor: SKColor(red: 0.6, green: 0.4, blue: 0.1, alpha: 1)
+        )
+    }
+
+    /// Scene 6: Night Storm (nature miracle Phase 1)
+    static func nightStorm() -> GameCharacter {
+        GameCharacter(
+            id: "night_storm", name: "Night Storm", characterClass: .obstacle,
+            title: "The Dark Water",
+            level: 7, hp: 280, mp: 99, attack: 22, defense: 10, speed: 15, faith: 0,
+            abilities: [AbilityDB.crashingWave, AbilityDB.howlingGale, AbilityDB.swallowingDeep],
+            primaryColor: SKColor(red: 0.05, green: 0.1, blue: 0.35, alpha: 1),
+            secondaryColor: SKColor(red: 0.2, green: 0.3, blue: 0.6, alpha: 1)
+        )
+    }
+
+    /// Scene 6: Doubt & Fear (Walking on Water Phase 2 — inner struggle)
+    static func doubtAndFearWater() -> GameCharacter {
+        GameCharacter(
+            id: "doubt_fear_water", name: "Doubt & Fear", characterClass: .obstacle,
+            title: "\"Why didst thou doubt?\"",
+            level: 6, hp: 180, mp: 99, attack: 16, defense: 8, speed: 10, faith: 0,
+            abilities: [AbilityDB.wailOfDespair, AbilityDB.spiritOfInfirmity],
+            primaryColor: SKColor(red: 0.2, green: 0.2, blue: 0.4, alpha: 1),
+            secondaryColor: SKColor(red: 0.4, green: 0.4, blue: 0.6, alpha: 1)
+        )
+    }
+
+    /// Scene 8: Spirit of Blindness (Bartimaeus — healing encounter)
+    static func spiritOfBlindness() -> GameCharacter {
+        GameCharacter(
+            id: "spirit_blindness", name: "Spirit of Blindness", characterClass: .obstacle,
+            title: "\"Rebuke him! He cries out.\"",
+            level: 5, hp: 200, mp: 99, attack: 12, defense: 8, speed: 7, faith: 0,
+            abilities: [AbilityDB.wailOfDespair, AbilityDB.darkCry],
+            primaryColor: SKColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 1),
+            secondaryColor: SKColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 1)
+        )
+    }
+
+    /// Scene 10: Spirit of Commerce (Temple — faith trial)
+    static func spiritOfCommerce() -> GameCharacter {
+        GameCharacter(
+            id: "spirit_commerce", name: "Spirit of Commerce", characterClass: .obstacle,
+            title: "\"A den of thieves\"",
+            level: 8, hp: 300, mp: 99, attack: 20, defense: 12, speed: 9, faith: 0,
+            abilities: [AbilityDB.torment, AbilityDB.wailOfDespair, AbilityDB.darkCry],
+            primaryColor: SKColor(red: 0.5, green: 0.4, blue: 0.1, alpha: 1),
+            secondaryColor: SKColor(red: 0.7, green: 0.6, blue: 0.2, alpha: 1)
+        )
+    }
+
+    /// Scene 11: Spirit of Darkness (Gethsemane — scripted failure)
+    static func spiritOfDarkness() -> GameCharacter {
+        GameCharacter(
+            id: "spirit_darkness", name: "Spirit of Darkness", characterClass: .obstacle,
+            title: "\"This is your hour\"",
+            level: 12, hp: 500, mp: 99, attack: 28, defense: 20, speed: 12, faith: 0,
+            abilities: [AbilityDB.possession, AbilityDB.torment, AbilityDB.wailOfDespair, AbilityDB.darkCry],
+            primaryColor: SKColor(red: 0.05, green: 0.0, blue: 0.1, alpha: 1),
+            secondaryColor: SKColor(red: 0.3, green: 0.0, blue: 0.3, alpha: 1)
+        )
+    }
+
+    /// Scene 12: Lingering Sorrow (Empty Tomb — faith trial, soft encounter)
+    static func lingeringSorrow() -> GameCharacter {
+        GameCharacter(
+            id: "lingering_sorrow", name: "Lingering Sorrow", characterClass: .obstacle,
+            title: "\"He is dead. All is lost.\"",
+            level: 8, hp: 250, mp: 99, attack: 18, defense: 10, speed: 8, faith: 0,
+            abilities: [AbilityDB.graspOfDeath, AbilityDB.wailOfDespair],
+            primaryColor: SKColor(red: 0.15, green: 0.1, blue: 0.1, alpha: 1),
+            secondaryColor: SKColor(red: 0.4, green: 0.3, blue: 0.3, alpha: 1)
         )
     }
 }
