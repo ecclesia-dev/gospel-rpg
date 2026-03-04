@@ -26,6 +26,9 @@ struct BattleView: View {
                         .ignoresSafeArea(edges: .top)
                 }
                 
+                // Encounter-type status bar (nature miracle / provision)
+                encounterStatusBar
+
                 // Scripture display
                 if let scripture = battleSystem.showScripture {
                     HStack {
@@ -114,6 +117,63 @@ struct BattleView: View {
         }
     }
     
+    // MARK: - Encounter Status Bar
+
+    @ViewBuilder
+    var encounterStatusBar: some View {
+        if let ns = battleSystem.natureState {
+            VStack(spacing: 2) {
+                HStack {
+                    Text("⛈️ Storm Power: \(ns.stormPower)/100")
+                        .font(.custom("Courier-Bold", size: 11))
+                        .foregroundColor(.cyan)
+                    Spacer()
+                    Text("Turns: \(ns.turnsRemaining)")
+                        .font(.custom("Courier", size: 11))
+                        .foregroundColor(ns.turnsRemaining <= 3 ? .red : .white)
+                }
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Rectangle().fill(Color.gray.opacity(0.3))
+                        Rectangle()
+                            .fill(Color.cyan)
+                            .frame(width: geo.size.width * CGFloat(ns.stormPower) / 100.0)
+                    }
+                }
+                .frame(height: 5)
+                .cornerRadius(2)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color(red: 0.05, green: 0.1, blue: 0.2))
+        } else if let ps = battleSystem.provisionState {
+            VStack(spacing: 2) {
+                HStack {
+                    Text("🍞 Crowd Hunger: \(ps.crowdHunger)/5000")
+                        .font(.custom("Courier-Bold", size: 11))
+                        .foregroundColor(.orange)
+                    Spacer()
+                    Text("×\(String(format: "%.1f", ps.foodMultiplier)) multiply")
+                        .font(.custom("Courier", size: 11))
+                        .foregroundColor(.green)
+                }
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Rectangle().fill(Color.gray.opacity(0.3))
+                        Rectangle()
+                            .fill(Color.orange)
+                            .frame(width: geo.size.width * CGFloat(ps.crowdHunger) / 5000.0)
+                    }
+                }
+                .frame(height: 5)
+                .cornerRadius(2)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color(red: 0.15, green: 0.1, blue: 0.02))
+        }
+    }
+
     var mainActionMenu: some View {
         HStack(spacing: 8) {
             actionButton("⚔️ Attack", color: .red) {
@@ -284,14 +344,23 @@ struct BattleView: View {
         scene.battleSystem = battleSystem
         scene.chapterNumber = chapter.number
         battleScene = scene
-        
-        // Fix 3: Wire the effect delegate so BattleSystem can push hit/heal events
-        // directly to the scene instead of BattleScene polling HP every frame.
+
         battleSystem.effectDelegate = scene
-        
         battleSystem.inventory = gameState.inventory
-        battleSystem.startBattle(party: gameState.party, enemies: chapter.battleEnemies)
-        battleSystem.onBattleEnd = { victory in
+        battleSystem.partyFaith = gameState.partyFaith
+        battleSystem.storyMode = gameState.storyMode
+
+        // Wire faith gain callback
+        battleSystem.onFaithGained = { gain in
+            gameState.adjustFaith(gain)
+        }
+
+        battleSystem.startBattle(
+            party: gameState.party,
+            enemies: chapter.battleEnemies,
+            type: chapter.encounterType
+        )
+        battleSystem.onBattleEnd = { _ in
             // handled by button
         }
     }

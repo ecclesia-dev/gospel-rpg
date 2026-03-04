@@ -61,13 +61,16 @@ struct TitleScreenView: View {
                 // Subtitle
                 if showSubtitle {
                     VStack(spacing: 8) {
-                        Text("\"He even gives orders to impure spirits")
+                        Text("\"What thing is this? what is this new doctrine?")
+                            .font(.custom("Courier", size: 13))
+                            .foregroundColor(.gray)
+                        Text("for with power he commandeth even the unclean spirits,")
                             .font(.custom("Courier", size: 13))
                             .foregroundColor(.gray)
                         Text("and they obey him.\"")
                             .font(.custom("Courier", size: 13))
                             .foregroundColor(.gray)
-                        Text("— Mark 1:27")
+                        Text("— Mark 1:27 (DRB)")
                             .font(.custom("Courier-Bold", size: 12))
                             .foregroundColor(Color(red: 0.8, green: 0.7, blue: 0.4))
                     }
@@ -83,12 +86,26 @@ struct TitleScreenView: View {
                         RPGButton(title: "NEW JOURNEY") {
                             startNewGame()
                         }
-                        
+
                         if !gameState.chaptersCompleted.isEmpty {
                             RPGButton(title: "CONTINUE") {
                                 gameState.currentScreen = .chapterIntro
                             }
                         }
+
+                        // Story Mode toggle (DESIGN.md §6.1)
+                        Button {
+                            gameState.storyMode.toggle()
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: gameState.storyMode ? "checkmark.square.fill" : "square")
+                                    .foregroundColor(gameState.storyMode ? .green : .gray)
+                                Text("Story Mode (easier encounters)")
+                                    .font(.custom("Courier", size: 13))
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                        .padding(.top, 4)
                     }
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }

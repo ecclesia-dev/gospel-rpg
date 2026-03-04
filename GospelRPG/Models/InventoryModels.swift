@@ -201,15 +201,42 @@ struct ItemDB {
         [shepherdStaff, roughCloak, leatherSandals, bread, bread, fish]
     }
 
-    /// Reward items per chapter
+    // Scene 5: The 12 blessed baskets (DESIGN.md §4 Scene 5)
+    static let blessedBasket = Item(
+        id: "blessed_basket", name: "Blessed Basket",
+        description: "A basket of fragments from the Feeding of the 5,000. Restores 60 HP and 30 MP.",
+        scriptureRef: "Mark 6:43 (DRB)", slot: nil,
+        attackBonus: 0, defenseBonus: 0, faithBonus: 0, hpBonus: 0, mpBonus: 0, healAmount: 60, icon: "🧺"
+    )
+
+    /// Reward items per scene (DESIGN.md §4)
     static func rewardsForChapter(_ chapter: Int) -> [Item] {
         switch chapter {
-        case 1: return [fishermanRod, leatherSandals, bread, fish]
-        case 2: return [sling, roughCloak, mustardSeed, bread, bread]
-        case 3: return [priestlyRobe, prayerShawl, wine, bread]
-        case 4: return [gospelSandals, shieldOfFaith, bread, fish, wine]
-        case 5: return [swordOfTheSpirit, armorOfGod, bread, bread, wine]
+        case 1:  return [fishermanRod, leatherSandals, bread, fish]
+        case 2:  return [sling, roughCloak, mustardSeed, bread, bread]
+        case 3:  return [gospelSandals, shieldOfFaith, bread, fish]   // Storm calmed
+        case 4:  return [priestlyRobe, prayerShawl, wine, bread]       // Talitha Cumi
+        case 5:  // Loaves & Fishes — 12 baskets!
+            return Array(repeating: blessedBasket, count: 12) + [swordOfTheSpirit]
+        case 6:  return [shieldOfFaith, bread, fish, wine]             // Walking on Water
+        case 7:  return [armorOfGod, mustardSeed, bread, bread]        // Boy with Spirit
+        case 8:  return [gospelSandals, wine, bread]                   // Bartimaeus
+        case 9:  return [mustardSeed, bread, fish]                     // Triumphal Entry
+        case 10: return [swordOfTheSpirit, prayerShawl, bread]        // Temple
+        case 11: return [watchAndPrayItem, bread, wine]                 // Gethsemane
+        case 12: return [Item(id: "risen_grace", name: "Risen Grace",
+                             description: "He is risen. All is made new. Restores all HP and MP.",
+                             scriptureRef: "Mark 16:6 (DRB)", slot: nil,
+                             attackBonus: 0, defenseBonus: 0, faithBonus: 0,
+                             hpBonus: 0, mpBonus: 0, healAmount: 999, icon: "✝️")]
         default: return [bread]
         }
     }
+
+    static let watchAndPrayItem = Item(
+        id: "watch_pray_item", name: "Vigil Prayer",
+        description: "\"Watch ye, and pray.\" — Mark 14:38 (DRB). Restores 40 HP.",
+        scriptureRef: "Mark 14:38 (DRB)", slot: nil,
+        attackBonus: 0, defenseBonus: 0, faithBonus: 5, hpBonus: 0, mpBonus: 0, healAmount: 40, icon: "🕯️"
+    )
 }
