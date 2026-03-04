@@ -377,10 +377,145 @@ class OverworldScene: SKScene {
         updateCamera(animated: true)
     }
     
+    // MARK: - NPC Ambient Dialogue (DESIGN.md §3.1)
+
+    /// One-line ambient text displayed near NPCs. Varies by chapter.
+    var npcAmbientDialogue: [[String]] {
+        switch chapterNumber {
+        case 1: return [
+            ["\"Have you heard the teacher from Nazareth?\""],
+            ["\"The Romans tax us heavily... but something is changing.\""],
+            ["\"He teaches with authority, not like the scribes.\""],
+            ["\"My son was ill. Jesus touched him and he was healed.\""],
+        ]
+        case 2: return [
+            ["\"They say a madman lives among the tombs across the sea.\""],
+            ["\"No one could bind him. Not even chains.\""],
+            ["\"The pigs ran into the sea. All of them.\""],
+        ]
+        case 3: return [
+            ["\"There is a storm coming. I can feel it.\""],
+            ["\"The fishermen know these waters. But this storm...\""],
+        ]
+        case 4: return [
+            ["\"Jairus went to find the Teacher. His daughter is dying.\""],
+            ["\"A woman in the crowd touched His robe and was healed.\""],
+            ["\"The mourners are already gathered at Jairus's house.\""],
+        ]
+        case 5: return [
+            ["\"We have been walking all day. Where will we find food?\""],
+            ["\"Five thousand men — and that's not counting women and children.\""],
+            ["\"Philip says two hundred denarii wouldn't be enough.\""],
+            ["\"A boy shared his loaves. Can you imagine?\""],
+        ]
+        case 6: return [
+            ["\"The disciples have been out on the water all night.\""],
+            ["\"Did you see? He walked on the sea. Like it was dry land.\""],
+        ]
+        case 7: return [
+            ["\"The scribes are arguing with His disciples again.\""],
+            ["\"A father brought his son — the boy foams and convulses.\""],
+            ["\"The disciples tried to cast it out. They couldn't.\""],
+        ]
+        case 8: return [
+            ["\"Bartimaeus has sat by this road for years.\""],
+            ["\"He called out 'Son of David!' The crowd hushed him.\""],
+            ["\"But he kept calling. Louder.\""],
+        ]
+        case 9: return [
+            ["\"Hosanna! Blessed is He who comes in the name of the Lord!\""],
+            ["\"He is riding on a donkey. Like the prophecy of Zechariah.\""],
+            ["\"The whole city has come out to greet Him.\""],
+            ["\"But the Pharisees are watching. Very carefully.\""],
+        ]
+        case 10: return [
+            ["\"He drove out the money-changers! Just overturned their tables.\""],
+            ["\"'My house shall be a house of prayer.' He quoted Isaiah.\""],
+            ["\"The scribes are furious. They want to arrest Him.\""],
+        ]
+        case 11: return [
+            ["\"Be still. This place is holy.\""],
+            ["\"The olive trees have stood here for generations.\""],
+            ["\"A prayer is being prayed here tonight that will change everything.\""],
+        ]
+        case 12: return [
+            ["\"It is the first day of the week. Before dawn.\""],
+            ["\"Who will roll the stone away for us?\""],
+            ["\"He is risen. He is not here.\""],
+        ]
+        default: return [["\"Have you heard the good news?\""]]
+        }
+    }
+
+    /// Show a speech bubble near the closest NPC to the player.
+    func updateNPCBubble() {
+        removeChildren(in: children.filter { $0.name == "npc_bubble" })
+
+        let dialogue = npcAmbientDialogue
+        guard !dialogue.isEmpty else { return }
+
+        // Find all NPC tiles within 3 tiles of the player
+        let radius = 3
+        var closest: (x: Int, y: Int, dist: Int)? = nil
+        for dy in -radius...radius {
+            for dx in -radius...radius {
+                let cx = playerX + dx
+                let cy = playerY + dy
+                guard cy >= 0, cy < mapData.count, cx >= 0, cx < mapData[0].count else { continue }
+                let tile = MapTile(rawValue: mapData[cy][cx])
+                if tile == .npc {
+                    let dist = abs(dx) + abs(dy)
+                    if closest == nil || dist < closest!.dist {
+                        closest = (cx, cy, dist)
+                    }
+                }
+            }
+        }
+
+        guard let npc = closest, npc.dist <= 3 else { return }
+
+        // Pick dialogue based on NPC position
+        let diagIndex = (npc.x * 7 + npc.y * 13 + chapterNumber) % dialogue.count
+        let lines = dialogue[diagIndex]
+        let text = lines.first ?? ""
+
+        let npcWorldPos = CGPoint(
+            x: CGFloat(npc.x) * tileSize + tileSize / 2,
+            y: CGFloat(mapData.count - 1 - npc.y) * tileSize + tileSize / 2
+        )
+
+        // Bubble background
+        let bubbleBg = SKShapeNode(rectOf: CGSize(width: 180, height: 28), cornerRadius: 6)
+        bubbleBg.fillColor = SKColor(red: 0.05, green: 0.05, blue: 0.15, alpha: 0.9)
+        bubbleBg.strokeColor = SKColor(red: 0.8, green: 0.7, blue: 0.3, alpha: 0.8)
+        bubbleBg.lineWidth = 1
+        bubbleBg.position = CGPoint(x: npcWorldPos.x, y: npcWorldPos.y + 30)
+        bubbleBg.zPosition = 15
+        bubbleBg.name = "npc_bubble"
+
+        let label = SKLabelNode(fontNamed: "Courier")
+        label.text = text
+        label.fontSize = 9
+        label.fontColor = .white
+        label.verticalAlignmentMode = .center
+        label.horizontalAlignmentMode = .center
+        label.numberOfLines = 2
+        label.preferredMaxLayoutWidth = 160
+        bubbleBg.addChild(label)
+
+        addChild(bubbleBg)
+
+        // Fade in/out
+        bubbleBg.alpha = 0
+        bubbleBg.run(.sequence([.fadeIn(withDuration: 0.3), .wait(forDuration: 3.0), .fadeOut(withDuration: 0.5), .removeFromParent()]))
+    }
+
     func checkTrigger() {
         if playerX == triggerX && playerY == triggerY {
             overworldDelegate?.didTriggerEvent()
         }
+        // Update NPC bubble whenever position changes
+        updateNPCBubble()
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -458,11 +593,88 @@ class OverworldScene: SKScene {
             if cy >= 0 && cy < mapData.count && cx >= 0 && cx < mapData[0].count {
                 let tile = MapTile(rawValue: mapData[cy][cx]) ?? .grass
                 if tile == .npc || tile == .door {
-                    overworldDelegate?.didTriggerEvent()
+                    // Door tiles near the trigger position → trigger the main event
+                    // NPC tiles → show NPC dialogue (handled by ambient bubble system)
+                    let distToTrigger = abs(cx - triggerX) + abs(cy - triggerY)
+                    if distToTrigger <= 2 {
+                        overworldDelegate?.didTriggerEvent()
+                    } else {
+                        // Show a scripture scroll for other doors (DESIGN.md §3.1 interactable objects)
+                        showScriptureScroll(forChapter: chapterNumber)
+                    }
                     return
                 }
             }
         }
+    }
+
+    // MARK: - Scripture Scroll (DESIGN.md §3.1 — interactable objects)
+
+    func showScriptureScroll(forChapter chapter: Int) {
+        removeChildren(in: children.filter { $0.name == "scripture_scroll" })
+
+        let scrollData: [(String, String)] = {
+            switch chapter {
+            case 1:  return [("\"Come after me, and I will make you to become fishers of men.\"", "Mark 1:17 (DRB)")]
+            case 2:  return [("\"Go into thy house to thy friends, and tell them how great things the Lord hath done for thee.\"", "Mark 5:19 (DRB)")]
+            case 3:  return [("\"Peace, be still.\"", "Mark 4:39 (DRB)")]
+            case 4:  return [("\"Fear not, only believe.\"", "Mark 5:36 (DRB)")]
+            case 5:  return [("\"And they did all eat, and had their fill.\"", "Mark 6:42 (DRB)")]
+            case 6:  return [("\"Have confidence, it is I, fear ye not.\"", "Mark 6:50 (DRB)")]
+            case 7:  return [("\"If thou canst believe, all things are possible to him that believeth.\"", "Mark 9:23 (DRB)")]
+            case 8:  return [("\"What wilt thou that I should do to thee?\"", "Mark 10:51 (DRB)")]
+            case 9:  return [("\"Hosanna: Blessed is he that cometh in the name of the Lord.\"", "Mark 11:9 (DRB)")]
+            case 10: return [("\"My house shall be called the house of prayer to all nations.\"", "Mark 11:17 (DRB)")]
+            case 11: return [("\"Watch ye, and pray that ye enter not into temptation.\"", "Mark 14:38 (DRB)")]
+            case 12: return [("\"Be not affrighted; he is risen, he is not here.\"", "Mark 16:6 (DRB)")]
+            default: return [("\"The beginning of the gospel of Jesus Christ, the Son of God.\"", "Mark 1:1 (DRB)")]
+            }
+        }()
+
+        guard let (text, ref) = scrollData.first else { return }
+
+        let playerPos = CGPoint(
+            x: CGFloat(playerX) * tileSize + tileSize / 2,
+            y: CGFloat(mapData.count - 1 - playerY) * tileSize + tileSize / 2
+        )
+
+        let scrollBg = SKShapeNode(rectOf: CGSize(width: 260, height: 70), cornerRadius: 8)
+        scrollBg.fillColor = SKColor(red: 0.12, green: 0.08, blue: 0.02, alpha: 0.95)
+        scrollBg.strokeColor = SKColor(red: 0.85, green: 0.7, blue: 0.3, alpha: 0.9)
+        scrollBg.lineWidth = 2
+        scrollBg.position = CGPoint(x: playerPos.x, y: playerPos.y + 60)
+        scrollBg.zPosition = 20
+        scrollBg.name = "scripture_scroll"
+
+        let verseLabel = SKLabelNode(fontNamed: "Courier")
+        verseLabel.text = text
+        verseLabel.fontSize = 9
+        verseLabel.fontColor = SKColor(red: 0.95, green: 0.9, blue: 0.75, alpha: 1)
+        verseLabel.verticalAlignmentMode = .center
+        verseLabel.horizontalAlignmentMode = .center
+        verseLabel.numberOfLines = 4
+        verseLabel.preferredMaxLayoutWidth = 240
+        verseLabel.position = CGPoint(x: 0, y: 10)
+        scrollBg.addChild(verseLabel)
+
+        let refLabel = SKLabelNode(fontNamed: "Courier-Bold")
+        refLabel.text = ref
+        refLabel.fontSize = 9
+        refLabel.fontColor = SKColor(red: 0.85, green: 0.7, blue: 0.3, alpha: 1)
+        refLabel.verticalAlignmentMode = .center
+        refLabel.horizontalAlignmentMode = .center
+        refLabel.position = CGPoint(x: 0, y: -20)
+        scrollBg.addChild(refLabel)
+
+        let bookIcon = SKLabelNode(fontNamed: "Courier-Bold")
+        bookIcon.text = "📖"
+        bookIcon.fontSize = 12
+        bookIcon.position = CGPoint(x: -110, y: 10)
+        scrollBg.addChild(bookIcon)
+
+        addChild(scrollBg)
+        scrollBg.alpha = 0
+        scrollBg.run(.sequence([.fadeIn(withDuration: 0.3), .wait(forDuration: 4.0), .fadeOut(withDuration: 0.5), .removeFromParent()]))
     }
     
     // MARK: - Ambient Effects
