@@ -209,8 +209,13 @@ struct DialogueView: View {
         timer = Timer.scheduledTimer(withTimeInterval: 0.03, repeats: true) { t in
             if charIndex < fullText.count {
                 let index = fullText.index(fullText.startIndex, offsetBy: charIndex)
-                displayedText += String(fullText[index])
+                let ch = fullText[index]
+                displayedText += String(ch)
                 charIndex += 1
+                // Beep on non-space characters (every 3rd char to avoid spam)
+                if charIndex % 3 == 0 && !ch.isWhitespace {
+                    MusicEngine.shared.playSFX(.dialogueBeep)
+                }
             } else {
                 t.invalidate()
                 isTyping = false

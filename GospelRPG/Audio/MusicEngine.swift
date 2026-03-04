@@ -18,16 +18,84 @@ final class MusicEngine {
     enum Theme: Equatable {
         case title, overworld, battle, victory
     }
+
+    // MARK: - Sound Effects (DESIGN.md §8.3 item 20)
+    enum SFXType {
+        case abilityHit       // Ability lands on enemy
+        case heal             // HP restored
+        case faithGain        // Faith increases
+        case dialogueBeep     // Typewriter character sound
+        case victoryJingle    // Short fanfare on encounter win
+        case rebuke           // Jesus rebuke command
+        case step             // Footstep in overworld
+    }
     
     private let engine      = AVAudioEngine()
     private let playerNode  = AVAudioPlayerNode()
+    private let sfxNode     = AVAudioPlayerNode()
     private var currentTheme: Theme?
     private let sampleRate: Double = 44100
     private let bpm: Double = 108
     
     private init() {
         engine.attach(playerNode)
+        engine.attach(sfxNode)
         engine.connect(playerNode, to: engine.mainMixerNode, format: nil)
+        engine.connect(sfxNode, to: engine.mainMixerNode, format: nil)
+    }
+
+    // MARK: - SFX API (DESIGN.md §8.3 item 20)
+
+    func playSFX(_ type: SFXType) {
+        guard let buffer = makeSFXBuffer(for: type) else { return }
+        ensureEngineRunning()
+        sfxNode.scheduleBuffer(buffer, at: nil, options: [])
+        if !sfxNode.isPlaying { sfxNode.play() }
+    }
+
+    private func ensureEngineRunning() {
+        guard !engine.isRunning else { return }
+        try? engine.start()
+    }
+
+    private func makeSFXBuffer(for type: SFXType) -> AVAudioPCMBuffer? {
+        let duration: Double
+        let frequency: Double
+        let waveType: Int    // 0 = square, 1 = triangle, 2 = sine
+
+        switch type {
+        case .abilityHit:    duration = 0.15; frequency = 440;  waveType = 0
+        case .heal:          duration = 0.25; frequency = 660;  waveType = 1
+        case .faithGain:     duration = 0.3;  frequency = 880;  waveType = 1
+        case .dialogueBeep:  duration = 0.04; frequency = 1200; waveType = 0
+        case .victoryJingle: duration = 0.5;  frequency = 523;  waveType = 1  // C5 triangle
+        case .rebuke:        duration = 0.2;  frequency = 220;  waveType = 0  // Low square
+        case .step:          duration = 0.05; frequency = 200;  waveType = 0
+        }
+
+        let sampleCount = Int(sampleRate * duration)
+        let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
+        guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(sampleCount)) else { return nil }
+        buffer.frameLength = AVAudioFrameCount(sampleCount)
+
+        let channelData = buffer.floatChannelData![0]
+        for i in 0..<sampleCount {
+            let t = Double(i) / sampleRate
+            let phase = t * frequency * 2.0 * .pi
+            let envelope = min(1.0, min(Double(i) / (sampleRate * 0.01), Double(sampleCount - i) / (sampleRate * 0.05)))
+            let sample: Double
+            switch waveType {
+            case 0:  // Square
+                sample = (sin(phase) >= 0 ? 0.3 : -0.3) * envelope
+            case 1:  // Triangle
+                let p = phase.truncatingRemainder(dividingBy: 2.0 * .pi) / (2.0 * .pi)
+                sample = (p < 0.5 ? 4.0 * p - 1.0 : 3.0 - 4.0 * p) * 0.4 * envelope
+            default: // Sine
+                sample = sin(phase) * 0.35 * envelope
+            }
+            channelData[i] = Float(sample)
+        }
+        return buffer
     }
     
     // MARK: - Public API

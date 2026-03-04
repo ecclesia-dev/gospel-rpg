@@ -358,6 +358,8 @@ class OverworldScene: SKScene {
         }
     }
     
+    private var stepCount = 0
+
     func movePlayer(dx: Int, dy: Int) {
         guard !isMoving else { return }
         
@@ -373,6 +375,11 @@ class OverworldScene: SKScene {
         isMoving = true
         playerX = newX
         playerY = newY
+        stepCount += 1
+        // Play footstep every 2 steps (DESIGN.md §8.3 item 20)
+        if stepCount % 2 == 0 {
+            MusicEngine.shared.playSFX(.step)
+        }
         updatePlayerPosition(animated: true)
         updateCamera(animated: true)
     }

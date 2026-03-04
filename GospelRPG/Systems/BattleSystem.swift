@@ -148,6 +148,7 @@ class BattleSystem: ObservableObject {
         let isEnemy = enemies.contains { $0.id == target.id }
         target.takeDamage(damage)
         effectDelegate?.triggerEffect(characterId: target.id, damage: damage, isEnemy: isEnemy)
+        MusicEngine.shared.playSFX(.abilityHit)
         battleLog.append("\(source.name) strikes \(target.name) for \(damage) damage!")
         
         // Nature miracle: attacking reduces storm power
@@ -180,6 +181,7 @@ class BattleSystem: ObservableObject {
                     member.heal(healAmount)
                     effectDelegate?.triggerHeal(characterId: member.id, amount: healAmount, isEnemy: false)
                 }
+                MusicEngine.shared.playSFX(.heal)
                 battleLog.append("\(source.name) uses \(ability.name)! Party healed for \(healAmount) HP!")
             } else if let target = target {
                 let base = ability.power + source.faith / 2
@@ -379,6 +381,7 @@ class BattleSystem: ObservableObject {
     private func endVictory() {
         isBattleOver = true
         isVictory = true
+        MusicEngine.shared.playSFX(.victoryJingle)
         let messages = [
             "✨ \"No man can enter into the house of the strong man, and rob him of his goods, unless he first bind the strong man.\" — Mark 3:27 (DRB)",
             "✨ Victory through faith! \"Have faith in God.\" — Mark 11:22 (DRB)",
