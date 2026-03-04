@@ -1,8 +1,11 @@
 # Security
 .env
+.secrets
 .secrets/
 *.key
 *.pem
+*.mobileprovision
+*.p12
 
 # macOS
 .DS_Store
@@ -10,3 +13,28 @@
 # Web
 node_modules/
 dist/
+
+# Xcode / iOS
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad
+DerivedData/
+*.ipa
+*.dSYM
+*.dSYM.zip
+*.xcarchive
+
+# Swift Package Manager
+.build/
+
+# CocoaPods
+Pods/
+
+# Workspace PII
+MEMORY.md
+USER.md
+SOUL.md
+AGENTS.md
+TOOLS.md
+HEARTBEAT.md
+IDENTITY.md
