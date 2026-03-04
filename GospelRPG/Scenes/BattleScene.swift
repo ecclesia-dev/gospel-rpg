@@ -34,6 +34,11 @@ class BattleScene: SKScene {
         case "andrew":              return "andrew"
         case "james":               return "james"
         case "john":                return "john"
+        case "levi":                return "disciple"
+        case "bartholomew":         return "disciple"
+        case "philip":              return "disciple"
+        case "thomas":              return "disciple"
+        case "mary_magdalene":      return "disciple"
         default:
             // Wildcard IDs (lesser_demon_*, raging_wind_*, etc.)
             if character.id.hasPrefix("lesser_demon") || character.id.hasPrefix("raging_wind") {
@@ -79,12 +84,61 @@ class BattleScene: SKScene {
                     SKColor(red: 0.04, green: 0.08, blue: 0.2, alpha: 1),
                     [SKColor(red: 0.6, green: 0.7, blue: 0.9, alpha: 1)]
                 )
-            case 5:
+            case 5:   // Loaves & Fishes — green hillside
                 return (
-                    SKColor(red: 0.06, green: 0.04, blue: 0.08, alpha: 1),
+                    SKColor(red: 0.1, green: 0.15, blue: 0.08, alpha: 1),
+                    SKColor(red: 0.15, green: 0.22, blue: 0.1, alpha: 1),
+                    SKColor(red: 0.12, green: 0.18, blue: 0.08, alpha: 1),
+                    [SKColor(red: 0.6, green: 0.9, blue: 1.0, alpha: 1), .white]
+                )
+            case 6:   // Walking on Water — dark sea at night
+                return (
+                    SKColor(red: 0.02, green: 0.04, blue: 0.15, alpha: 1),
+                    SKColor(red: 0.04, green: 0.08, blue: 0.25, alpha: 1),
+                    SKColor(red: 0.03, green: 0.06, blue: 0.2, alpha: 1),
+                    [SKColor(red: 0.9, green: 0.9, blue: 1.0, alpha: 1), .white]
+                )
+            case 7:   // Boy with Spirit — mountain foot, daylight
+                return (
+                    SKColor(red: 0.08, green: 0.1, blue: 0.06, alpha: 1),
+                    SKColor(red: 0.18, green: 0.16, blue: 0.12, alpha: 1),
+                    SKColor(red: 0.14, green: 0.12, blue: 0.09, alpha: 1),
+                    [SKColor(red: 0.8, green: 0.85, blue: 1.0, alpha: 1), .white]
+                )
+            case 8:   // Bartimaeus — road, warm
+                return (
+                    SKColor(red: 0.18, green: 0.13, blue: 0.06, alpha: 1),
+                    SKColor(red: 0.25, green: 0.18, blue: 0.1, alpha: 1),
+                    SKColor(red: 0.2, green: 0.15, blue: 0.08, alpha: 1),
+                    [SKColor(red: 0.9, green: 0.7, blue: 0.4, alpha: 1), .yellow]
+                )
+            case 9:   // Triumphal Entry — bright celebration
+                return (
+                    SKColor(red: 0.15, green: 0.12, blue: 0.05, alpha: 1),
+                    SKColor(red: 0.25, green: 0.2, blue: 0.08, alpha: 1),
+                    SKColor(red: 0.2, green: 0.16, blue: 0.06, alpha: 1),
+                    [.yellow, SKColor(red: 0.9, green: 0.85, blue: 0.5, alpha: 1)]
+                )
+            case 10:  // Temple — stone, solemn
+                return (
+                    SKColor(red: 0.12, green: 0.1, blue: 0.08, alpha: 1),
+                    SKColor(red: 0.22, green: 0.18, blue: 0.14, alpha: 1),
+                    SKColor(red: 0.18, green: 0.15, blue: 0.11, alpha: 1),
+                    [SKColor(red: 0.9, green: 0.8, blue: 0.6, alpha: 1)]
+                )
+            case 11:  // Gethsemane — very dark
+                return (
+                    SKColor(red: 0.02, green: 0.03, blue: 0.02, alpha: 1),
+                    SKColor(red: 0.04, green: 0.06, blue: 0.04, alpha: 1),
+                    SKColor(red: 0.03, green: 0.05, blue: 0.03, alpha: 1),
+                    [SKColor(red: 0.3, green: 0.4, blue: 0.3, alpha: 1)]
+                )
+            case 12:  // Empty Tomb — pre-dawn
+                return (
                     SKColor(red: 0.12, green: 0.08, blue: 0.06, alpha: 1),
-                    SKColor(red: 0.1, green: 0.06, blue: 0.05, alpha: 1),
-                    [.yellow]
+                    SKColor(red: 0.2, green: 0.14, blue: 0.1, alpha: 1),
+                    SKColor(red: 0.16, green: 0.11, blue: 0.07, alpha: 1),
+                    [SKColor(red: 1.0, green: 0.95, blue: 0.8, alpha: 1), .yellow]
                 )
             default:
                 return (
@@ -100,11 +154,18 @@ class BattleScene: SKScene {
         
         // Try loading a chapter-specific battle background from xcassets
         let bgNames: [Int: String] = [
-            1: "bg_temple",
-            2: "bg_village",
-            3: "bg_mountain",
-            4: "bg_lakeshore",
-            5: "bg_temple"
+            1:  "bg_temple",
+            2:  "bg_village",
+            3:  "bg_lakeshore",
+            4:  "bg_village",
+            5:  "bg_lakeshore",
+            6:  "bg_lakeshore",
+            7:  "bg_mountain",
+            8:  "bg_village",
+            9:  "bg_temple",
+            10: "bg_temple",
+            11: "bg_mountain",
+            12: "bg_village"
         ]
         if let bgName = bgNames[chapterNumber], let bgTex = tryTexture(named: bgName) {
             let bgSprite = SKSpriteNode(texture: bgTex, size: size)
